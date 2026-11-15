@@ -104,26 +104,26 @@ export default function Inventory() {
   };
 
   return (
-    <div className="space-y-6 animate-fadeIn pb-12">
+    <div className="space-y-5 sm:space-y-6 animate-fadeIn pb-4">
       {/* Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-slate-200">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 pb-4 sm:pb-6 border-b border-slate-200">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+          <h1 className="text-xl sm:text-2xl lg:text-3xl font-extrabold text-slate-900 tracking-tight">
             Inventory Catalogue
           </h1>
-          <p className="text-xs sm:text-sm text-slate-500 mt-1">
+          <p className="text-xs sm:text-sm text-slate-500 mt-0.5 sm:mt-1">
             Manage product specifications, monitor stock levels, and execute warehouse stock movements.
           </p>
         </div>
 
-        <Button variant="primary" size="md" icon={Plus} onClick={handleOpenAdd}>
-          Add Product
+        <Button variant="primary" size="md" icon={Plus} onClick={handleOpenAdd} className="w-full sm:w-auto">
+          Add New Product
         </Button>
       </div>
 
       {/* Filter and Control Bar */}
-      <Card className="p-4 space-y-3 border border-slate-200/80 bg-white">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+      <Card className="p-3.5 sm:p-4 space-y-3 border border-slate-200/80 bg-white">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3">
           {/* Keyword Search */}
           <div className="relative">
             <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
@@ -135,7 +135,7 @@ export default function Inventory() {
                 setPage(1);
               }}
               placeholder="Filter by name, SKU, brand..."
-              className="w-full text-xs rounded-xl pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all shadow-xs"
+              className="w-full text-xs sm:text-sm rounded-xl pl-9 pr-3 py-2 sm:py-2.5 bg-slate-50 border border-slate-200 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all shadow-xs"
             />
           </div>
 
@@ -148,7 +148,7 @@ export default function Inventory() {
                 setCategory(e.target.value);
                 setPage(1);
               }}
-              className="w-full text-xs font-semibold rounded-xl pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all shadow-xs"
+              className="w-full text-xs sm:text-sm font-semibold rounded-xl pl-9 pr-3 py-2 sm:py-2.5 bg-slate-50 border border-slate-200 text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all shadow-xs"
             >
               <option value="">All Categories</option>
               {categories.map((c) => (
@@ -165,7 +165,7 @@ export default function Inventory() {
             <select
               value={sort}
               onChange={(e) => setSort(e.target.value)}
-              className="w-full text-xs font-semibold rounded-xl pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all shadow-xs"
+              className="w-full text-xs sm:text-sm font-semibold rounded-xl pl-9 pr-3 py-2 sm:py-2.5 bg-slate-50 border border-slate-200 text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all shadow-xs"
             >
               <option value="created_at">Sort by Date Added</option>
               <option value="name">Sort by Product Name</option>
@@ -178,7 +178,7 @@ export default function Inventory() {
           <div className="flex items-center gap-2">
             <button
               onClick={() => setOrder((prev) => (prev === 'asc' ? 'desc' : 'asc'))}
-              className="flex-1 text-xs py-2.5 px-3 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 font-bold transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-xs"
+              className="flex-1 text-xs py-2 sm:py-2.5 px-3 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 font-bold transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-xs min-h-[38px]"
             >
               <SlidersHorizontal className="w-3.5 h-3.5" />
               <span>{order.toUpperCase() === 'ASC' ? 'Ascending Order' : 'Descending Order'}</span>
@@ -187,8 +187,8 @@ export default function Inventory() {
         </div>
 
         {/* Stock Status Pills */}
-        <div className="flex flex-wrap items-center gap-2 pt-3 border-t border-slate-100">
-          <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mr-1">
+        <div className="flex items-center gap-1.5 pt-2.5 border-t border-slate-100 overflow-x-auto pb-1 scrollbar-none">
+          <span className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider mr-1 flex-shrink-0">
             Status:
           </span>
           {[
@@ -203,7 +203,7 @@ export default function Inventory() {
                 setStatus(st.id);
                 setPage(1);
               }}
-              className={`px-3 py-1 text-xs rounded-full font-bold transition-all cursor-pointer ${
+              className={`px-3 py-1 text-xs rounded-full font-bold transition-all flex-shrink-0 cursor-pointer ${
                 status === st.id
                   ? 'bg-indigo-600 text-white shadow-xs'
                   : 'bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-900'
@@ -213,14 +213,14 @@ export default function Inventory() {
             </button>
           ))}
           {isFetching && (
-            <span className="text-[11px] font-semibold text-slate-400 animate-pulse ml-auto">
-              Updating list...
+            <span className="text-[11px] font-semibold text-slate-400 animate-pulse ml-auto flex-shrink-0">
+              Updating...
             </span>
           )}
         </div>
       </Card>
 
-      {/* Data Table */}
+      {/* Main Content: Mobile Cards + Desktop Table */}
       <Card className="overflow-hidden border border-slate-200/80 bg-white">
         {isLoading ? (
           <TableSkeleton rows={8} cols={6} />
@@ -238,138 +238,244 @@ export default function Inventory() {
             }}
           />
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse text-xs">
-              <thead>
-                <tr className="bg-slate-50 border-b border-slate-200 text-[11px] font-bold uppercase text-slate-500 tracking-wider">
-                  <th className="py-3.5 px-4">Product & Brand</th>
-                  <th className="py-3.5 px-4">SKU</th>
-                  <th className="py-3.5 px-4">Category</th>
-                  <th className="py-3.5 px-4 text-right">Available Stock</th>
-                  <th className="py-3.5 px-4 text-center">Status</th>
-                  <th className="py-3.5 px-4 text-right">Quick Stock Actions</th>
-                  <th className="py-3.5 px-4 text-center">Manage</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {products.map((p) => {
-                  const statusConfig = getStockStatusConfig(p.stock_status);
-                  return (
-                    <tr
-                      key={p.id}
-                      className="hover:bg-slate-50/80 transition-colors group"
-                    >
-                      <td className="py-3.5 px-4">
-                        <div className="flex items-center gap-3">
-                          {p.image_url ? (
-                            <img
-                              src={p.image_url}
-                              alt={p.name}
-                              className="w-10 h-10 rounded-xl object-cover bg-slate-100 border border-slate-200 flex-shrink-0"
-                              onError={(e) => {
-                                e.target.style.display = 'none';
-                              }}
-                            />
-                          ) : (
-                            <div className="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-700 border border-indigo-100 flex items-center justify-center font-bold text-xs flex-shrink-0">
-                              {p.name.charAt(0)}
-                            </div>
-                          )}
-                          <div className="min-w-0">
-                            <Link
-                              to={`/inventory/${p.id}`}
-                              className="font-bold text-slate-900 hover:text-indigo-600 transition-colors block truncate max-w-xs"
-                            >
-                              {p.name}
-                            </Link>
-                            <span className="text-slate-500 text-[11px] font-medium block">{p.brand}</span>
-                          </div>
+          <>
+            {/* Mobile Touch Cards View (hidden on tablet/desktop) */}
+            <div className="md:hidden divide-y divide-slate-100">
+              {products.map((p) => {
+                const statusConfig = getStockStatusConfig(p.stock_status);
+                return (
+                  <div key={p.id} className="p-4 space-y-3">
+                    <div className="flex items-start gap-3">
+                      {p.image_url ? (
+                        <img
+                          src={p.image_url}
+                          alt={p.name}
+                          className="w-14 h-14 rounded-xl object-cover bg-slate-100 border border-slate-200 flex-shrink-0"
+                          onError={(e) => {
+                            e.target.style.display = 'none';
+                          }}
+                        />
+                      ) : (
+                        <div className="w-14 h-14 rounded-xl bg-indigo-50 text-indigo-700 border border-indigo-100 flex items-center justify-center font-bold text-sm flex-shrink-0">
+                          {p.name.charAt(0)}
                         </div>
-                      </td>
+                      )}
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <span className="font-mono font-bold text-slate-700 bg-slate-100 px-1.5 py-0.5 rounded text-[10px] border border-slate-200/60">
+                            {p.sku}
+                          </span>
+                          <span className="text-[10px] text-slate-500 font-semibold bg-slate-50 px-1.5 py-0.5 rounded">
+                            {p.category_name}
+                          </span>
+                        </div>
+                        <Link
+                          to={`/inventory/${p.id}`}
+                          className="font-bold text-sm text-slate-900 hover:text-indigo-600 transition-colors block truncate mt-1"
+                        >
+                          {p.name}
+                        </Link>
+                        <span className="text-slate-500 text-[11px] block">{p.brand}</span>
+                      </div>
+                    </div>
 
-                      <td className="py-3.5 px-4">
-                        <span className="font-mono font-bold text-slate-700 bg-slate-100 px-2 py-0.5 rounded text-[11px] border border-slate-200/60">
-                          {p.sku}
+                    <div className="flex items-center justify-between pt-1">
+                      <div>
+                        <span className="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">
+                          Available Stock
                         </span>
-                      </td>
-
-                      <td className="py-3.5 px-4 text-slate-600 font-semibold">
-                        {p.category_name}
-                      </td>
-
-                      <td className="py-3.5 px-4 text-right">
-                        <span className="font-mono font-extrabold text-sm text-slate-900">
+                        <span className="font-mono font-extrabold text-base text-slate-900">
                           {formatNumber(p.quantity)}
                         </span>{' '}
-                        <span className="text-slate-500 text-[11px] font-medium">{p.unit}</span>
-                      </td>
-
-                      <td className="py-3.5 px-4 text-center">
+                        <span className="text-slate-500 text-xs">{p.unit}</span>
+                      </div>
+                      <div>
                         <span
                           className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold border ${statusConfig.badgeClass}`}
                         >
                           <span className={`w-1.5 h-1.5 rounded-full ${statusConfig.dotClass}`} />
                           {statusConfig.label}
                         </span>
-                      </td>
+                      </div>
+                    </div>
 
-                      <td className="py-3.5 px-4 text-right">
-                        <div className="flex items-center justify-end gap-1.5">
-                          <button
-                            onClick={() => handleOpenStockAction(p, 'IN')}
-                            className="p-1.5 rounded-lg text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 transition-colors cursor-pointer"
-                            title="Add Stock (+ IN)"
-                          >
-                            <PackagePlus className="w-3.5 h-3.5" />
-                          </button>
-                          <button
-                            onClick={() => handleOpenStockAction(p, 'OUT')}
-                            className="p-1.5 rounded-lg text-rose-700 bg-rose-50 hover:bg-rose-100 border border-rose-200 transition-colors cursor-pointer"
-                            title="Remove Stock (- OUT)"
-                          >
-                            <PackageMinus className="w-3.5 h-3.5" />
-                          </button>
-                          <button
-                            onClick={() => handleOpenStockAction(p, 'ADJUST')}
-                            className="p-1.5 rounded-lg text-amber-700 bg-amber-50 hover:bg-amber-100 border border-amber-200 transition-colors cursor-pointer"
-                            title="Physical Audit Count"
-                          >
-                            <SlidersHorizontal className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
-                      </td>
+                    {/* Touch-Friendly Action Buttons Strip */}
+                    <div className="flex items-center gap-1.5 pt-2 border-t border-slate-100">
+                      <button
+                        onClick={() => handleOpenStockAction(p, 'IN')}
+                        className="flex-1 py-2 px-2 text-xs font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-lg flex items-center justify-center gap-1 cursor-pointer active:scale-95"
+                      >
+                        <PackagePlus className="w-3.5 h-3.5" />
+                        <span>+ IN</span>
+                      </button>
+                      <button
+                        onClick={() => handleOpenStockAction(p, 'OUT')}
+                        className="flex-1 py-2 px-2 text-xs font-bold text-rose-700 bg-rose-50 hover:bg-rose-100 border border-rose-200 rounded-lg flex items-center justify-center gap-1 cursor-pointer active:scale-95"
+                      >
+                        <PackageMinus className="w-3.5 h-3.5" />
+                        <span>- OUT</span>
+                      </button>
+                      <button
+                        onClick={() => handleOpenStockAction(p, 'ADJUST')}
+                        className="py-2 px-2.5 text-xs font-bold text-amber-700 bg-amber-50 hover:bg-amber-100 border border-amber-200 rounded-lg flex items-center justify-center gap-1 cursor-pointer active:scale-95"
+                        title="Audit count"
+                      >
+                        <SlidersHorizontal className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        onClick={() => handleOpenEdit(p)}
+                        className="p-2 text-slate-500 hover:text-indigo-600 bg-slate-50 border border-slate-200 rounded-lg cursor-pointer active:scale-95"
+                        title="Edit product"
+                      >
+                        <Edit2 className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => handleDeleteProduct(p.id, p.name)}
+                        className="p-2 text-slate-500 hover:text-rose-600 bg-slate-50 border border-slate-200 rounded-lg cursor-pointer active:scale-95"
+                        title="Delete product"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
 
-                      <td className="py-3.5 px-4 text-center">
-                        <div className="flex items-center justify-center gap-1.5">
-                          <Link
-                            to={`/inventory/${p.id}`}
-                            className="p-1.5 text-slate-400 hover:text-indigo-600 transition-colors"
-                            title="View Product History"
+            {/* Desktop Table View (hidden on small mobile) */}
+            <div className="hidden md:block overflow-x-auto">
+              <table className="w-full text-left border-collapse text-xs">
+                <thead>
+                  <tr className="bg-slate-50 border-b border-slate-200 text-[11px] font-bold uppercase text-slate-500 tracking-wider">
+                    <th className="py-3.5 px-4">Product & Brand</th>
+                    <th className="py-3.5 px-4">SKU</th>
+                    <th className="py-3.5 px-4">Category</th>
+                    <th className="py-3.5 px-4 text-right">Available Stock</th>
+                    <th className="py-3.5 px-4 text-center">Status</th>
+                    <th className="py-3.5 px-4 text-right">Quick Stock Actions</th>
+                    <th className="py-3.5 px-4 text-center">Manage</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {products.map((p) => {
+                    const statusConfig = getStockStatusConfig(p.stock_status);
+                    return (
+                      <tr
+                        key={p.id}
+                        className="hover:bg-slate-50/80 transition-colors group"
+                      >
+                        <td className="py-3.5 px-4">
+                          <div className="flex items-center gap-3">
+                            {p.image_url ? (
+                              <img
+                                src={p.image_url}
+                                alt={p.name}
+                                className="w-10 h-10 rounded-xl object-cover bg-slate-100 border border-slate-200 flex-shrink-0"
+                                onError={(e) => {
+                                  e.target.style.display = 'none';
+                                }}
+                              />
+                            ) : (
+                              <div className="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-700 border border-indigo-100 flex items-center justify-center font-bold text-xs flex-shrink-0">
+                                {p.name.charAt(0)}
+                              </div>
+                            )}
+                            <div className="min-w-0">
+                              <Link
+                                to={`/inventory/${p.id}`}
+                                className="font-bold text-slate-900 hover:text-indigo-600 transition-colors block truncate max-w-xs"
+                              >
+                                {p.name}
+                              </Link>
+                              <span className="text-slate-500 text-[11px] font-medium block">{p.brand}</span>
+                            </div>
+                          </div>
+                        </td>
+
+                        <td className="py-3.5 px-4">
+                          <span className="font-mono font-bold text-slate-700 bg-slate-100 px-2 py-0.5 rounded text-[11px] border border-slate-200/60">
+                            {p.sku}
+                          </span>
+                        </td>
+
+                        <td className="py-3.5 px-4 text-slate-600 font-semibold">
+                          {p.category_name}
+                        </td>
+
+                        <td className="py-3.5 px-4 text-right">
+                          <span className="font-mono font-extrabold text-sm text-slate-900">
+                            {formatNumber(p.quantity)}
+                          </span>{' '}
+                          <span className="text-slate-500 text-[11px] font-medium">{p.unit}</span>
+                        </td>
+
+                        <td className="py-3.5 px-4 text-center">
+                          <span
+                            className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold border ${statusConfig.badgeClass}`}
                           >
-                            <ExternalLink className="w-3.5 h-3.5" />
-                          </Link>
-                          <button
-                            onClick={() => handleOpenEdit(p)}
-                            className="p-1.5 text-slate-400 hover:text-indigo-600 transition-colors cursor-pointer"
-                            title="Edit Product"
-                          >
-                            <Edit2 className="w-3.5 h-3.5" />
-                          </button>
-                          <button
-                            onClick={() => handleDeleteProduct(p.id, p.name)}
-                            className="p-1.5 text-slate-400 hover:text-rose-600 transition-colors cursor-pointer"
-                            title="Delete Product"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
+                            <span className={`w-1.5 h-1.5 rounded-full ${statusConfig.dotClass}`} />
+                            {statusConfig.label}
+                          </span>
+                        </td>
+
+                        <td className="py-3.5 px-4 text-right">
+                          <div className="flex items-center justify-end gap-1.5">
+                            <button
+                              onClick={() => handleOpenStockAction(p, 'IN')}
+                              className="p-1.5 rounded-lg text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 transition-colors cursor-pointer"
+                              title="Add Stock (+ IN)"
+                            >
+                              <PackagePlus className="w-3.5 h-3.5" />
+                            </button>
+                            <button
+                              onClick={() => handleOpenStockAction(p, 'OUT')}
+                              className="p-1.5 rounded-lg text-rose-700 bg-rose-50 hover:bg-rose-100 border border-rose-200 transition-colors cursor-pointer"
+                              title="Remove Stock (- OUT)"
+                            >
+                              <PackageMinus className="w-3.5 h-3.5" />
+                            </button>
+                            <button
+                              onClick={() => handleOpenStockAction(p, 'ADJUST')}
+                              className="p-1.5 rounded-lg text-amber-700 bg-amber-50 hover:bg-amber-100 border border-amber-200 transition-colors cursor-pointer"
+                              title="Physical Audit Count"
+                            >
+                              <SlidersHorizontal className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        </td>
+
+                        <td className="py-3.5 px-4 text-center">
+                          <div className="flex items-center justify-center gap-1.5">
+                            <Link
+                              to={`/inventory/${p.id}`}
+                              className="p-1.5 text-slate-400 hover:text-indigo-600 transition-colors"
+                              title="View Product History"
+                            >
+                              <ExternalLink className="w-3.5 h-3.5" />
+                            </Link>
+                            <button
+                              onClick={() => handleOpenEdit(p)}
+                              className="p-1.5 text-slate-400 hover:text-indigo-600 transition-colors cursor-pointer"
+                              title="Edit Product"
+                            >
+                              <Edit2 className="w-3.5 h-3.5" />
+                            </button>
+                            <button
+                              onClick={() => handleDeleteProduct(p.id, p.name)}
+                              className="p-1.5 text-slate-400 hover:text-rose-600 transition-colors cursor-pointer"
+                              title="Delete Product"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </>
         )}
 
         <Pagination

@@ -7,10 +7,11 @@ import {
   History,
   Settings,
   Layers,
-  ArrowUpRight
+  ArrowUpRight,
+  X
 } from 'lucide-react';
 
-export const Sidebar = () => {
+export const Sidebar = ({ onNavigate, onClose, isMobile = false }) => {
   const mainNavItems = [
     { label: 'Dashboard', path: '/', icon: LayoutDashboard },
     { label: 'Smart Search', path: '/search', icon: Search, badge: 'FAST', badgeColor: 'bg-indigo-600' },
@@ -26,15 +27,20 @@ export const Sidebar = () => {
     { label: 'Diagnostics & Settings', path: '/settings', icon: Settings }
   ];
 
+  const handleLinkClick = () => {
+    if (onNavigate) onNavigate();
+  };
+
   const renderLink = (item) => (
     <NavLink
       key={item.path}
       to={item.path}
       end={item.path === '/'}
+      onClick={handleLinkClick}
       className={({ isActive }) =>
         `group flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all duration-150 ${
           isActive
-            ? 'bg-indigo-50/90 text-indigo-700 shadow-xs border border-indigo-100'
+            ? 'bg-indigo-50/90 text-indigo-700 shadow-xs border border-indigo-100 font-bold'
             : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/80 border border-transparent'
         }`
       }
@@ -56,11 +62,15 @@ export const Sidebar = () => {
   );
 
   return (
-    <aside className="w-64 flex-shrink-0 bg-white border-r border-slate-200/80 flex flex-col justify-between h-screen sticky top-0 shadow-xs select-none">
-      <div>
+    <aside
+      className={`bg-white border-r border-slate-200/80 flex flex-col justify-between h-full select-none ${
+        isMobile ? 'w-72' : 'hidden lg:flex w-64 flex-shrink-0 h-screen sticky top-0 shadow-xs'
+      }`}
+    >
+      <div className="overflow-y-auto">
         {/* Brand Header */}
-        <div className="h-16 flex items-center px-6 border-b border-slate-100">
-          <NavLink to="/" className="flex items-center gap-3 group">
+        <div className="h-16 flex items-center justify-between px-6 border-b border-slate-100">
+          <NavLink to="/" onClick={handleLinkClick} className="flex items-center gap-3 group">
             <div className="p-2.5 bg-gradient-to-tr from-indigo-600 to-violet-600 rounded-xl text-white shadow-sm shadow-indigo-200 group-hover:shadow-md transition-shadow">
               <Layers className="w-5 h-5" />
             </div>
@@ -76,6 +86,16 @@ export const Sidebar = () => {
               </span>
             </div>
           </NavLink>
+
+          {isMobile && onClose && (
+            <button
+              onClick={onClose}
+              className="p-1.5 text-slate-400 hover:text-slate-700 rounded-lg hover:bg-slate-100 transition-colors"
+              aria-label="Close menu"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          )}
         </div>
 
         {/* Navigation Sections */}
@@ -115,11 +135,12 @@ export const Sidebar = () => {
               PostgreSQL 18
             </span>
           </div>
-          <p className="text-slate-500 text-[11px] mt-1.5">
+          <p className="text-slate-500 text-[11px] mt-1.5 leading-relaxed">
             Single-source ACID inventory ledger with row-level transaction locks.
           </p>
           <NavLink
             to="/settings"
+            onClick={handleLinkClick}
             className="mt-2.5 inline-flex items-center gap-1 text-[11px] font-bold text-indigo-600 hover:text-indigo-800"
           >
             <span>Run diagnostics</span>

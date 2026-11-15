@@ -52,37 +52,35 @@ export const StatCard = ({
   const scheme = colorMap[color] || colorMap.indigo;
 
   return (
-    <Card className="p-5 border border-slate-200/80 hover:border-slate-300 hover:shadow-card-hover transition-all duration-200 group">
-      <div className="flex items-start justify-between">
-        <div className="space-y-1 min-w-0">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-500 truncate">
+    <Card className="p-3.5 sm:p-5 border border-slate-200/80 hover:border-slate-300 hover:shadow-card-hover transition-all duration-200 group">
+      <div className="flex items-start justify-between gap-1.5">
+        <div className="space-y-0.5 sm:space-y-1 min-w-0">
+          <p className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-slate-500 truncate">
             {title}
           </p>
           {isLoading ? (
-            <div className="h-8 w-24 bg-slate-200 animate-pulse rounded-md mt-1" />
+            <div className="h-7 sm:h-8 w-20 sm:w-24 bg-slate-200 animate-pulse rounded-md mt-1" />
           ) : (
-            <div className="flex items-baseline gap-2">
-              <p className="text-2xl xl:text-3xl font-extrabold text-slate-900 tracking-tight font-sans">
-                {formatNumber(value)}
-              </p>
-            </div>
+            <p className="text-xl sm:text-2xl xl:text-3xl font-black text-slate-900 tracking-tight font-sans">
+              {formatNumber(value)}
+            </p>
           )}
         </div>
 
         {Icon && (
           <div
-            className={`p-2.5 rounded-xl border ${scheme.bg} ${scheme.text} ${scheme.border} flex-shrink-0 shadow-2xs group-hover:scale-105 transition-transform duration-200`}
+            className={`p-2 sm:p-2.5 rounded-xl border ${scheme.bg} ${scheme.text} ${scheme.border} flex-shrink-0 shadow-2xs group-hover:scale-105 transition-transform duration-200`}
           >
-            <Icon className="w-5 h-5" />
+            <Icon className="w-4 h-4 sm:w-5 sm:h-5" />
           </div>
         )}
       </div>
 
-      <div className="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
-        <p className="text-slate-500 text-[11px] font-medium truncate">{subtitle}</p>
+      <div className="mt-2.5 sm:mt-3 pt-2 sm:pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] gap-1">
+        <p className="text-slate-500 text-[10px] sm:text-[11px] font-medium truncate">{subtitle}</p>
         {badgeText && (
           <span
-            className={`text-[10px] font-bold px-1.5 py-0.5 rounded-md ${scheme.badgeBg}`}
+            className={`text-[9px] sm:text-[10px] font-extrabold px-1.5 py-0.5 rounded-md flex-shrink-0 ${scheme.badgeBg}`}
           >
             {badgeText}
           </span>
