@@ -1,4 +1,5 @@
 import { ProductService } from '../services/product.service.js';
+import { SearchService } from '../services/search.service.js';
 import { ApiResponse } from '../utils/ApiResponse.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 
@@ -6,6 +7,17 @@ export class ProductController {
   static getAll = asyncHandler(async (req, res) => {
     const { products, meta } = await ProductService.getAllProducts(req.query);
     return ApiResponse.ok(res, products, 'Products retrieved successfully', meta);
+  });
+
+  static search = asyncHandler(async (req, res) => {
+    const { data, meta } = await SearchService.searchProducts(req.query);
+    return res.status(200).json({
+      success: true,
+      statusCode: 200,
+      message: 'Smart search results retrieved successfully',
+      data,
+      meta
+    });
   });
 
   static getById = asyncHandler(async (req, res) => {
@@ -28,4 +40,3 @@ export class ProductController {
     return ApiResponse.ok(res, result, 'Product deleted successfully');
   });
 }
-
