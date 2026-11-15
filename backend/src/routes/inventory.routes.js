@@ -27,3 +27,4 @@ router.post('/stock-out', validate(stockOutSchema, 'body'), InventoryController.
 router.post('/adjust', validate(stockAdjustSchema, 'body'), InventoryController.adjust);
 
 export default router;
+

@@ -33,3 +33,4 @@ export class InventoryController {
     return ApiResponse.ok(res, movements, 'Stock movements retrieved successfully', meta);
   });
 }
+
