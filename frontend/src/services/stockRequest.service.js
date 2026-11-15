@@ -50,3 +50,4 @@ export const stockRequestService = {
     return apiClient.post(`/stock-requests/${id}/cancel`);
   }
 };
+

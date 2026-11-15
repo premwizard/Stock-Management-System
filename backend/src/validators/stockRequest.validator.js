@@ -59,3 +59,4 @@ export const listStockRequestsQuerySchema = z.object({
 export const stockRequestIdParamSchema = z.object({
   id: z.string().uuid('Invalid stock request UUID')
 });
+

@@ -49,3 +49,4 @@ CREATE INDEX IF NOT EXISTS idx_stock_requests_req_num ON stock_requests(request_
 CREATE INDEX IF NOT EXISTS idx_stock_request_items_request_id ON stock_request_items(request_id);
 CREATE INDEX IF NOT EXISTS idx_stock_request_items_product_id ON stock_request_items(product_id);
 CREATE INDEX IF NOT EXISTS idx_stock_movements_stock_request_id ON stock_movements(stock_request_id);
+

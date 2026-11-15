@@ -333,3 +333,4 @@ export class StockRequestRepository {
     return res.rows[0];
   }
 }
+

@@ -55,3 +55,4 @@ export class StockRequestController {
     return ApiResponse.ok(res, request, `Stock request '${request.request_number}' cancelled successfully`);
   });
 }
+
