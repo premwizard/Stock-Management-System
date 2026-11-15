@@ -13,7 +13,9 @@
     "db:seed": "node src/database/seed.js",
     "db:reset": "node src/database/reset.js",
     "lint": "eslint src/",
-    "test": "node tests/foundation.test.js"
+    "test": "node tests/foundation.test.js && node tests/product_category.test.js",
+    "test:foundation": "node tests/foundation.test.js",
+    "test:products": "node tests/product_category.test.js"
   },
   "dependencies": {
     "cors": "^2.8.5",
