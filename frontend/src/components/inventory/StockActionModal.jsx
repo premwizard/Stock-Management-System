@@ -190,6 +190,7 @@ export const StockActionModal = ({
         <Input
           label={actionType === 'ADJUST' ? 'New Target Inventory Count *' : 'Quantity Units *'}
           type="number"
+          inputMode="numeric"
           min={actionType === 'ADJUST' ? '0' : '1'}
           value={quantity}
           onChange={(e) => setQuantity(e.target.value)}

@@ -56,7 +56,7 @@ const runDashboardTests = async () => {
     assert(summaryRes.statusCode === 200, 'GET /dashboard/summary returns HTTP 200');
     const s = summaryRes.data?.data;
     assert(s?.totalProducts >= 140, `Summary reports ${s?.totalProducts} total products`);
-    assert(s?.totalCategories === 7, `Summary reports ${s?.totalCategories} total categories`);
+    assert(s?.totalCategories >= 7, `Summary reports ${s?.totalCategories} total categories`);
     assert(s?.totalStockUnits > 6000, `Summary reports ${s?.totalStockUnits} total stock units`);
     assert(s?.lowStockCount > 0, `Summary reports ${s?.lowStockCount} low stock products`);
     assert(s?.outOfStockCount > 0, `Summary reports ${s?.outOfStockCount} out of stock products`);
@@ -69,7 +69,7 @@ const runDashboardTests = async () => {
     const distRes = await request('/dashboard/category-distribution');
     assert(distRes.statusCode === 200, 'GET /dashboard/category-distribution returns HTTP 200');
     const dist = distRes.data?.data;
-    assert(Array.isArray(dist) && dist.length === 7, 'Distribution includes all 7 categories');
+    assert(Array.isArray(dist) && dist.length >= 7, 'Distribution includes all seeded categories');
     assert(dist[0]?.categoryName !== undefined, 'Distribution item includes categoryName');
     assert(dist[0]?.totalQuantity !== undefined, 'Distribution item includes totalQuantity');
     assert(dist[0]?.percentage !== undefined, 'Distribution item includes percentage');

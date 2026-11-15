@@ -47,14 +47,15 @@ export const Modal = ({
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 text-slate-400 hover:text-slate-700 rounded-xl hover:bg-slate-200/60 transition-colors"
+            aria-label="Close dialog"
+            className="p-2 min-h-[44px] min-w-[44px] flex items-center justify-center text-slate-400 hover:text-slate-700 rounded-xl hover:bg-slate-200/60 transition-colors cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Content */}
-        <div className="p-6 max-h-[calc(100vh-12rem)] overflow-y-auto">{children}</div>
+        <div className="p-4 sm:p-6 max-h-[82vh] overflow-y-auto">{children}</div>
       </div>
     </div>
   );

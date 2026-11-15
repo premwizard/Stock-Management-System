@@ -20,11 +20,11 @@ export const Pagination = ({
         <span className="font-bold text-slate-900">{totalItems}</span> results
       </div>
 
-      <div className="flex items-center gap-1.5">
+      <div className="flex items-center gap-2">
         <button
           onClick={() => onPageChange(page - 1)}
           disabled={page <= 1}
-          className="p-1.5 rounded-lg border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors shadow-2xs"
+          className="p-2 min-h-[36px] min-w-[36px] flex items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors shadow-2xs cursor-pointer"
           title="Previous page"
         >
           <ChevronLeft className="w-4 h-4" />
@@ -37,7 +37,7 @@ export const Pagination = ({
         <button
           onClick={() => onPageChange(page + 1)}
           disabled={page >= totalPages}
-          className="p-1.5 rounded-lg border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors shadow-2xs"
+          className="p-2 min-h-[36px] min-w-[36px] flex items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors shadow-2xs cursor-pointer"
           title="Next page"
         >
           <ChevronRight className="w-4 h-4" />

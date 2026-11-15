@@ -48,3 +48,4 @@ export const MobileBottomNav = ({ onOpenMenu }) => {
     </nav>
   );
 };
+

@@ -104,7 +104,13 @@ export default function Categories() {
           </p>
         </div>
 
-        <Button variant="primary" size="md" icon={Plus} onClick={handleOpenAdd}>
+        <Button
+          variant="primary"
+          size="md"
+          icon={Plus}
+          onClick={handleOpenAdd}
+          className="w-full sm:w-auto justify-center"
+        >
           Add Category
         </Button>
       </div>

@@ -284,7 +284,7 @@ export default function SmartSearch() {
           </div>
 
           {/* Stock Status Selector */}
-          <div className="flex items-center gap-1.5 p-1 bg-slate-100 rounded-xl border border-slate-200/60">
+          <div className="flex items-center gap-1.5 p-1 bg-slate-100 rounded-xl border border-slate-200/60 overflow-x-auto no-scrollbar max-w-full">
             {[
               { id: 'all', label: 'All' },
               { id: 'in_stock', label: 'In Stock' },
@@ -297,7 +297,7 @@ export default function SmartSearch() {
                   setStatus(st.id);
                   setPage(1);
                 }}
-                className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer ${
+                className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer whitespace-nowrap shrink-0 ${
                   status === st.id
                     ? 'bg-white text-indigo-700 shadow-xs'
                     : 'text-slate-600 hover:text-slate-900'

@@ -88,14 +88,15 @@ export default function ProductDetails() {
           <span>Back to Catalogue</span>
         </Link>
 
-        <div className="flex flex-wrap items-center gap-2.5">
+        <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2 w-full sm:w-auto">
           <Button
             variant="outline"
             size="sm"
             icon={Edit2}
             onClick={() => setIsEditModalOpen(true)}
+            className="justify-center"
           >
-            Edit Specifications
+            Edit Specs
           </Button>
           <Button
             variant="primary"
@@ -105,6 +106,7 @@ export default function ProductDetails() {
               setStockAction('IN');
               setIsStockModalOpen(true);
             }}
+            className="justify-center"
           >
             Stock IN
           </Button>
@@ -116,6 +118,7 @@ export default function ProductDetails() {
               setStockAction('OUT');
               setIsStockModalOpen(true);
             }}
+            className="justify-center"
           >
             Stock OUT
           </Button>
@@ -127,6 +130,7 @@ export default function ProductDetails() {
               setStockAction('ADJUST');
               setIsStockModalOpen(true);
             }}
+            className="justify-center"
           >
             Audit Count
           </Button>
@@ -254,50 +258,94 @@ export default function ProductDetails() {
             {movements.length === 0 ? (
               <p className="text-xs text-slate-400 py-6 text-center">No movement transactions logged.</p>
             ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-xs">
-                  <thead>
-                    <tr className="border-b border-slate-100 text-[10px] uppercase text-slate-400 font-bold tracking-wider">
-                      <th className="py-2.5 px-3">Date</th>
-                      <th className="py-2.5 px-3">Type</th>
-                      <th className="py-2.5 px-3 text-right">Units</th>
-                      <th className="py-2.5 px-3 text-right">Balance Change</th>
-                      <th className="py-2.5 px-3">Audit Reason</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100">
-                    {movements.map((m) => (
-                      <tr key={m.id} className="hover:bg-slate-50/60 transition-colors">
-                        <td className="py-3 px-3 text-slate-500 whitespace-nowrap font-medium">{formatDate(m.created_at)}</td>
-                        <td className="py-3 px-3">
-                          <Badge
-                            variant={
-                              m.movement_type === 'IN'
-                                ? 'success'
-                                : m.movement_type === 'OUT'
-                                ? 'danger'
-                                : 'warning'
-                            }
-                          >
-                            {m.movement_type}
-                          </Badge>
-                        </td>
-                        <td className="py-3 px-3 text-right font-mono font-extrabold text-slate-900">
+              <>
+                {/* Desktop Table */}
+                <div className="hidden sm:block overflow-x-auto">
+                  <table className="w-full text-left text-xs">
+                    <thead>
+                      <tr className="border-b border-slate-100 text-[10px] uppercase text-slate-400 font-bold tracking-wider">
+                        <th className="py-2.5 px-3">Date</th>
+                        <th className="py-2.5 px-3">Type</th>
+                        <th className="py-2.5 px-3 text-right">Units</th>
+                        <th className="py-2.5 px-3 text-right">Balance Change</th>
+                        <th className="py-2.5 px-3">Audit Reason</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100">
+                      {movements.map((m) => (
+                        <tr key={m.id} className="hover:bg-slate-50/60 transition-colors">
+                          <td className="py-3 px-3 text-slate-500 whitespace-nowrap font-medium">{formatDate(m.created_at)}</td>
+                          <td className="py-3 px-3">
+                            <Badge
+                              variant={
+                                m.movement_type === 'IN'
+                                  ? 'success'
+                                  : m.movement_type === 'OUT'
+                                  ? 'danger'
+                                  : 'warning'
+                              }
+                            >
+                              {m.movement_type}
+                            </Badge>
+                          </td>
+                          <td className="py-3 px-3 text-right font-mono font-extrabold text-slate-900">
+                            {m.movement_type === 'OUT' ? '-' : '+'}
+                            {formatNumber(m.quantity)}
+                          </td>
+                          <td className="py-3 px-3 text-right font-mono text-slate-400 whitespace-nowrap">
+                            {m.previous_quantity} &rarr;{' '}
+                            <span className="font-extrabold text-slate-900">{m.new_quantity}</span>
+                          </td>
+                          <td className="py-3 px-3 text-slate-600 max-w-xs truncate font-medium">
+                            {m.reason}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Mobile Cards (sm:hidden) */}
+                <div className="sm:hidden divide-y divide-slate-100">
+                  {movements.map((m) => (
+                    <div key={m.id} className="py-3 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <Badge
+                          variant={
+                            m.movement_type === 'IN'
+                              ? 'success'
+                              : m.movement_type === 'OUT'
+                              ? 'danger'
+                              : 'warning'
+                          }
+                        >
+                          {m.movement_type}
+                        </Badge>
+                        <span className="text-[11px] text-slate-400 font-medium">
+                          {formatDate(m.created_at)}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="font-mono text-slate-500">
+                          {m.previous_quantity} &rarr;{' '}
+                          <span className="font-bold text-slate-900">{m.new_quantity}</span>
+                        </span>
+                        <span
+                          className={`font-mono font-black ${
+                            m.movement_type === 'OUT' ? 'text-rose-600' : 'text-emerald-600'
+                          }`}
+                        >
                           {m.movement_type === 'OUT' ? '-' : '+'}
                           {formatNumber(m.quantity)}
-                        </td>
-                        <td className="py-3 px-3 text-right font-mono text-slate-400 whitespace-nowrap">
-                          {m.previous_quantity} &rarr;{' '}
-                          <span className="font-extrabold text-slate-900">{m.new_quantity}</span>
-                        </td>
-                        <td className="py-3 px-3 text-slate-600 max-w-xs truncate font-medium">
-                          {m.reason}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-slate-600 bg-slate-50 p-2 rounded-lg font-medium">
+                        {m.reason}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </>
             )}
           </Card>
         </div>
