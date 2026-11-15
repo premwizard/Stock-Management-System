@@ -25,7 +25,8 @@ export default [
         process: 'readonly',
         localStorage: 'readonly',
         alert: 'readonly',
-        confirm: 'readonly'
+        confirm: 'readonly',
+        URL: 'readonly'
       }
     },
     settings: {

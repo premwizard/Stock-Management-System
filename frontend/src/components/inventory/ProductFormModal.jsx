@@ -31,16 +31,18 @@ export const ProductFormModal = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
+    if (!isOpen) return;
+
     if (product) {
       setFormData({
         name: product.name || '',
         sku: product.sku || '',
-        categoryId: product.category_id || '',
+        categoryId: product.category_id || product.categoryId || (categories[0]?.id || ''),
         brand: product.brand || 'Generic',
         description: product.description || '',
         unit: product.unit || 'pcs',
-        imageUrl: product.image_url || '',
-        minimumStock: product.minimum_stock ?? 10,
+        imageUrl: product.image_url || product.imageUrl || '',
+        minimumStock: product.minimum_stock ?? product.minimumStock ?? 10,
         initialStock: 0
       });
     } else {
@@ -57,7 +59,7 @@ export const ProductFormModal = ({
       });
     }
     setErrors({});
-  }, [product, categories, isOpen]);
+  }, [isOpen, product, categories]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -69,11 +71,48 @@ export const ProductFormModal = ({
 
   const validate = () => {
     const errs = {};
-    if (!formData.name.trim()) errs.name = 'Product name is required';
-    if (!formData.sku.trim()) errs.sku = 'SKU is required';
-    if (!formData.categoryId) errs.categoryId = 'Category selection is required';
-    if (formData.minimumStock < 0) errs.minimumStock = 'Minimum stock cannot be negative';
-    if (!isEditing && formData.initialStock < 0) errs.initialStock = 'Initial stock cannot be negative';
+    if (!formData.name.trim()) {
+      errs.name = 'Product name is required';
+    } else if (formData.name.trim().length < 2) {
+      errs.name = 'Product name must be at least 2 characters';
+    }
+
+    if (!isEditing) {
+      if (!formData.sku.trim()) {
+        errs.sku = 'SKU is required';
+      } else if (formData.sku.trim().length < 2) {
+        errs.sku = 'SKU must be at least 2 characters';
+      } else if (!/^[A-Za-z0-9-_]+$/.test(formData.sku.trim())) {
+        errs.sku = 'SKU may only contain letters, numbers, hyphens, and underscores';
+      }
+    }
+
+    if (!formData.categoryId) {
+      errs.categoryId = 'Category selection is required';
+    }
+
+    if (formData.minimumStock === '' || Number(formData.minimumStock) < 0) {
+      errs.minimumStock = 'Minimum stock must be 0 or greater';
+    }
+
+    if (!isEditing && (formData.initialStock === '' || Number(formData.initialStock) < 0)) {
+      errs.initialStock = 'Initial stock cannot be negative';
+    }
+
+    if (formData.imageUrl && formData.imageUrl.trim()) {
+      const urlCandidate = formData.imageUrl.trim();
+      const testUrl = /^https?:\/\//i.test(urlCandidate) || urlCandidate.startsWith('/') || urlCandidate.startsWith('data:image')
+        ? urlCandidate
+        : `https://${urlCandidate}`;
+      try {
+        if (!testUrl.startsWith('data:image')) {
+          new window.URL(testUrl.startsWith('/') ? `http://localhost${testUrl}` : testUrl);
+        }
+      } catch {
+        errs.imageUrl = 'Please enter a valid image URL or leave blank';
+      }
+    }
+
     setErrors(errs);
     return Object.keys(errs).length === 0;
   };
@@ -83,37 +122,49 @@ export const ProductFormModal = ({
     if (!validate()) return;
 
     setIsSubmitting(true);
+    setErrors({});
+
+    const cleanedImageUrl = formData.imageUrl?.trim() || '';
+    const payload = {
+      name: formData.name.trim(),
+      categoryId: formData.categoryId,
+      brand: formData.brand?.trim() || 'Generic',
+      description: formData.description?.trim() || '',
+      unit: formData.unit?.trim() || 'pcs',
+      imageUrl: cleanedImageUrl,
+      minimumStock: Math.max(0, parseInt(formData.minimumStock, 10) || 0)
+    };
+
     try {
       if (isEditing) {
-        await productService.update(product.id, {
-          name: formData.name,
-          categoryId: formData.categoryId,
-          brand: formData.brand,
-          description: formData.description,
-          unit: formData.unit,
-          imageUrl: formData.imageUrl,
-          minimumStock: Number(formData.minimumStock)
-        });
+        await productService.update(product.id, payload);
       } else {
         await productService.create({
-          name: formData.name,
-          sku: formData.sku,
-          categoryId: formData.categoryId,
-          brand: formData.brand || 'Generic',
-          description: formData.description,
-          unit: formData.unit || 'pcs',
-          imageUrl: formData.imageUrl,
-          minimumStock: Number(formData.minimumStock),
-          initialStock: Number(formData.initialStock)
+          ...payload,
+          sku: formData.sku.trim().toUpperCase(),
+          initialStock: Math.max(0, parseInt(formData.initialStock, 10) || 0)
         });
       }
 
       queryClient.invalidateQueries({ queryKey: ['products'] });
       queryClient.invalidateQueries({ queryKey: ['inventory'] });
       queryClient.invalidateQueries({ queryKey: ['dashboard-summary'] });
+      queryClient.invalidateQueries({ queryKey: ['categories'] });
       onClose();
     } catch (err) {
-      setErrors({ form: err.message || 'Failed to save product' });
+      const fieldErrors = {};
+      if (Array.isArray(err.errors) && err.errors.length > 0) {
+        err.errors.forEach((e) => {
+          if (e.field) {
+            fieldErrors[e.field] = e.message;
+          }
+        });
+        const details = err.errors.map((e) => e.message).join(' • ');
+        fieldErrors.form = `Validation Error: ${details}`;
+      } else {
+        fieldErrors.form = err.message || 'Failed to save product';
+      }
+      setErrors(fieldErrors);
     } finally {
       setIsSubmitting(false);
     }
@@ -168,6 +219,7 @@ export const ProductFormModal = ({
             onChange={handleChange}
             options={categoryOptions}
             error={errors.categoryId}
+            placeholder="-- Choose Category --"
           />
 
           <Input
@@ -175,6 +227,7 @@ export const ProductFormModal = ({
             name="brand"
             value={formData.brand}
             onChange={handleChange}
+            error={errors.brand}
             placeholder="e.g. Michelin, Bosch, Brembo"
           />
         </div>
@@ -185,6 +238,7 @@ export const ProductFormModal = ({
             name="unit"
             value={formData.unit}
             onChange={handleChange}
+            error={errors.unit}
             placeholder="pcs, sets, liters, pairs"
           />
 
@@ -216,6 +270,7 @@ export const ProductFormModal = ({
           name="imageUrl"
           value={formData.imageUrl}
           onChange={handleChange}
+          error={errors.imageUrl}
           placeholder="https://images.unsplash.com/..."
         />
 
@@ -231,6 +286,9 @@ export const ProductFormModal = ({
             className="block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 text-sm p-3 focus:outline-none focus:ring-2 focus:ring-indigo-500"
             placeholder="Provide specifications, vehicle compatibility, or part attributes..."
           />
+          {errors.description && (
+            <p className="text-xs text-rose-600 dark:text-rose-400 font-medium">{errors.description}</p>
+          )}
         </div>
 
         <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100 dark:border-slate-800">
@@ -245,4 +303,3 @@ export const ProductFormModal = ({
     </Modal>
   );
 };
-
