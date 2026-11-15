@@ -22,7 +22,10 @@ export default [
         console: 'readonly',
         setTimeout: 'readonly',
         clearTimeout: 'readonly',
-        process: 'readonly'
+        process: 'readonly',
+        localStorage: 'readonly',
+        alert: 'readonly',
+        confirm: 'readonly'
       }
     },
     settings: {
