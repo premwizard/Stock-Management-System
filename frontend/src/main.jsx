@@ -4,6 +4,10 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import App from './App.jsx';
 import './index.css';
 
+// Ensure pure light mode
+document.documentElement.classList.remove('dark');
+localStorage.removeItem('stockpulse_theme');
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {

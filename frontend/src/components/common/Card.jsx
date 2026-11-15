@@ -1,9 +1,9 @@
-export const Card = ({ children, className = '', hover = false, ...props }) => {
+export const Card = ({ children, className = '', hover = true, ...props }) => {
   return (
     <div
-      className={`bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm ${
+      className={`bg-white rounded-2xl border border-slate-200/80 shadow-xs ${
         hover
-          ? 'hover:shadow-md hover:border-slate-300 dark:hover:border-slate-700 transition-all duration-200'
+          ? 'hover:shadow-card-hover hover:border-slate-300 transition-all duration-200'
           : ''
       } ${className}`}
       {...props}
@@ -12,4 +12,3 @@ export const Card = ({ children, className = '', hover = false, ...props }) => {
     </div>
   );
 };
-

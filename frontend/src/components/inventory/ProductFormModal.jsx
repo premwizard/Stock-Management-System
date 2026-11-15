@@ -275,7 +275,7 @@ export const ProductFormModal = ({
         />
 
         <div className="space-y-1.5">
-          <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+          <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
             Description
           </label>
           <textarea
@@ -283,15 +283,15 @@ export const ProductFormModal = ({
             rows="3"
             value={formData.description}
             onChange={handleChange}
-            className="block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 text-sm p-3 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="block w-full rounded-xl border border-slate-300 bg-white text-slate-900 text-sm p-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 shadow-xs"
             placeholder="Provide specifications, vehicle compatibility, or part attributes..."
           />
           {errors.description && (
-            <p className="text-xs text-rose-600 dark:text-rose-400 font-medium">{errors.description}</p>
+            <p className="text-xs text-rose-600 font-semibold">{errors.description}</p>
           )}
         </div>
 
-        <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100 dark:border-slate-800">
+        <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
           <Button variant="ghost" onClick={onClose} disabled={isSubmitting}>
             Cancel
           </Button>

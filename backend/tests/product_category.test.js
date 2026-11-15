@@ -198,6 +198,7 @@ const runTests = async () => {
     if (testCatId) {
       await pool.query('DELETE FROM categories WHERE id = $1', [testCatId]).catch(() => {});
     }
+    await pool.query("DELETE FROM categories WHERE name LIKE 'Test Category%'").catch(() => {});
     await pool.end();
   }
 };

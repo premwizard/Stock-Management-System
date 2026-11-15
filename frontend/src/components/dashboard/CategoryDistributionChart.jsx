@@ -14,53 +14,61 @@ import { Card } from '../common/Card';
 import { BarChart3, PieChart as PieIcon } from 'lucide-react';
 import { formatNumber } from '../../utils/formatters';
 
-const COLORS = [
-  '#4f46e5', // indigo
-  '#06b6d4', // cyan
-  '#10b981', // emerald
-  '#f59e0b', // amber
-  '#8b5cf6', // purple
-  '#ec4899', // pink
-  '#3b82f6'  // blue
+const PALETTE = [
+  { fill: '#4f46e5', name: 'Indigo' },
+  { fill: '#0284c7', name: 'Sky' },
+  { fill: '#059669', name: 'Emerald' },
+  { fill: '#d97706', name: 'Amber' },
+  { fill: '#7c3aed', name: 'Purple' },
+  { fill: '#db2777', name: 'Pink' },
+  { fill: '#2563eb', name: 'Blue' }
 ];
 
 export const CategoryDistributionChart = ({ data = [], isLoading = false }) => {
   const [chartType, setChartType] = useState('bar');
 
+  const totalWarehouseUnits = data.reduce((acc, curr) => acc + Number(curr.totalQuantity || 0), 0);
+
   return (
-    <Card className="p-6">
+    <Card className="p-6 border border-slate-200/80">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
         <div>
-          <h3 className="text-base font-bold text-slate-900 dark:text-slate-100">
-            Stock Distribution by Category
-          </h3>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-            Total available units across all 7 inventory categories
+          <div className="flex items-center gap-2">
+            <h3 className="text-base font-bold text-slate-900 tracking-tight">
+              Stock Distribution by Category
+            </h3>
+            <span className="text-[11px] font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full border border-slate-200/60">
+              {data.length} Categories &bull; {formatNumber(totalWarehouseUnits)} Units
+            </span>
+          </div>
+          <p className="text-xs text-slate-500 mt-0.5">
+            Real-time aggregate stock volume across warehouse product divisions
           </p>
         </div>
 
-        <div className="flex items-center p-1 bg-slate-100 dark:bg-slate-800 rounded-lg self-start sm:self-auto">
+        {/* View Switcher */}
+        <div className="flex items-center p-1 bg-slate-100 rounded-xl self-start sm:self-auto border border-slate-200/60">
           <button
             onClick={() => setChartType('bar')}
-            className={`p-1.5 rounded-md text-xs font-medium flex items-center gap-1.5 transition-colors ${
+            className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
               chartType === 'bar'
-                ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 shadow-sm'
-                : 'text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200'
+                ? 'bg-white text-indigo-700 shadow-xs'
+                : 'text-slate-600 hover:text-slate-900'
             }`}
           >
             <BarChart3 className="w-3.5 h-3.5" />
-            <span>Bar</span>
+            <span>Volume (Bar)</span>
           </button>
           <button
             onClick={() => setChartType('pie')}
-            className={`p-1.5 rounded-md text-xs font-medium flex items-center gap-1.5 transition-colors ${
+            className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
               chartType === 'pie'
-                ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 shadow-sm'
-                : 'text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200'
+                ? 'bg-white text-indigo-700 shadow-xs'
+                : 'text-slate-600 hover:text-slate-900'
             }`}
           >
             <PieIcon className="w-3.5 h-3.5" />
-            <span>Donut</span>
+            <span>Mix % (Donut)</span>
           </button>
         </div>
       </div>
@@ -77,46 +85,59 @@ export const CategoryDistributionChart = ({ data = [], isLoading = false }) => {
         <div className="h-72 w-full">
           {chartType === 'bar' ? (
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 25 }}>
+              <BarChart data={data} margin={{ top: 10, right: 10, left: -10, bottom: 25 }}>
                 <XAxis
                   dataKey="categoryName"
-                  stroke="#94a3b8"
+                  stroke="#64748b"
                   fontSize={11}
+                  fontWeight={600}
                   tickLine={false}
                   interval={0}
                   angle={-25}
                   textAnchor="end"
                 />
                 <YAxis
-                  stroke="#94a3b8"
+                  stroke="#64748b"
                   fontSize={11}
+                  fontWeight={500}
                   tickLine={false}
                   axisLine={false}
                   tickFormatter={(val) => `${val}`}
                 />
                 <Tooltip
-                  cursor={{ fill: 'rgba(99, 102, 241, 0.05)' }}
+                  cursor={{ fill: 'rgba(79, 70, 229, 0.05)' }}
                   content={({ active, payload }) => {
                     if (active && payload && payload.length) {
                       const item = payload[0].payload;
                       return (
-                        <div className="bg-slate-900 text-white px-3 py-2 rounded-lg text-xs shadow-lg space-y-1">
-                          <p className="font-bold">{item.categoryName}</p>
-                          <p className="text-slate-300">
-                            Stock: <span className="text-white font-semibold">{formatNumber(item.totalQuantity)} units</span> ({item.percentage}%)
-                          </p>
-                          <p className="text-slate-400 text-[10px]">
-                            {item.productCount} active products
-                          </p>
+                        <div className="bg-white p-3 rounded-xl shadow-xl border border-slate-200 text-xs space-y-1.5 animate-fadeIn">
+                          <p className="font-bold text-slate-900 text-sm">{item.categoryName}</p>
+                          <div className="flex items-center gap-2 text-slate-600 font-medium">
+                            <span className="w-2.5 h-2.5 rounded-full bg-indigo-600"></span>
+                            <span>Stock Units:</span>
+                            <span className="font-bold text-slate-900 font-mono">
+                              {formatNumber(item.totalQuantity)} units
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2 text-slate-600 font-medium">
+                            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+                            <span>Share of Warehouse:</span>
+                            <span className="font-bold text-emerald-700 font-mono">
+                              {item.percentage}%
+                            </span>
+                          </div>
                         </div>
                       );
                     }
                     return null;
                   }}
                 />
-                <Bar dataKey="totalQuantity" radius={[6, 6, 0, 0]}>
+                <Bar dataKey="totalQuantity" radius={[8, 8, 0, 0]}>
                   {data.map((_, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    <Cell
+                      key={`cell-${index}`}
+                      fill={PALETTE[index % PALETTE.length].fill}
+                    />
                   ))}
                 </Bar>
               </BarChart>
@@ -135,7 +156,10 @@ export const CategoryDistributionChart = ({ data = [], isLoading = false }) => {
                   nameKey="categoryName"
                 >
                   {data.map((_, index) => (
-                    <Cell key={`cell-pie-${index}`} fill={COLORS[index % COLORS.length]} />
+                    <Cell
+                      key={`pie-cell-${index}`}
+                      fill={PALETTE[index % PALETTE.length].fill}
+                    />
                   ))}
                 </Pie>
                 <Tooltip
@@ -143,10 +167,13 @@ export const CategoryDistributionChart = ({ data = [], isLoading = false }) => {
                     if (active && payload && payload.length) {
                       const item = payload[0].payload;
                       return (
-                        <div className="bg-slate-900 text-white px-3 py-2 rounded-lg text-xs shadow-lg space-y-1">
-                          <p className="font-bold">{item.categoryName}</p>
-                          <p className="text-slate-300">
-                            {formatNumber(item.totalQuantity)} units ({item.percentage}%)
+                        <div className="bg-white p-3 rounded-xl shadow-xl border border-slate-200 text-xs space-y-1.5 animate-fadeIn">
+                          <p className="font-bold text-slate-900 text-sm">{item.categoryName}</p>
+                          <p className="text-slate-600 font-medium">
+                            Stock Units: <span className="font-bold text-slate-900 font-mono">{formatNumber(item.totalQuantity)}</span>
+                          </p>
+                          <p className="text-slate-600 font-medium">
+                            Share: <span className="font-bold text-indigo-700 font-mono">{item.percentage}%</span>
                           </p>
                         </div>
                       );
@@ -159,7 +186,24 @@ export const CategoryDistributionChart = ({ data = [], isLoading = false }) => {
           )}
         </div>
       )}
+
+      {/* Category Pills Breakdown */}
+      <div className="mt-4 pt-4 border-t border-slate-100 flex flex-wrap gap-2">
+        {data.map((item, index) => (
+          <div
+            key={item.categoryId || index}
+            className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-50 border border-slate-200/80 text-[11px] font-semibold text-slate-700"
+          >
+            <span
+              className="w-2.5 h-2.5 rounded-full flex-shrink-0"
+              style={{ backgroundColor: PALETTE[index % PALETTE.length].fill }}
+            />
+            <span className="truncate max-w-[100px]">{item.categoryName}</span>
+            <span className="text-slate-400 font-normal">&bull;</span>
+            <span className="font-bold text-slate-900 font-mono">{formatNumber(item.totalQuantity)}</span>
+          </div>
+        ))}
+      </div>
     </Card>
   );
 };
-

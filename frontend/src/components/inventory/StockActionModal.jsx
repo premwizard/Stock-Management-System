@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Modal } from '../common/Modal';
 import { Input } from '../common/Input';
 import { Button } from '../common/Button';
@@ -20,6 +20,15 @@ export const StockActionModal = ({
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  useEffect(() => {
+    if (isOpen) {
+      setActionType(initialAction);
+      setQuantity('');
+      setReason('');
+      setError('');
+    }
+  }, [isOpen, initialAction, product]);
+
   const currentStock = Number(product?.quantity) || 0;
   const numQuantity = Number(quantity) || 0;
 
@@ -37,7 +46,7 @@ export const StockActionModal = ({
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!quantity || numQuantity <= 0 && actionType !== 'ADJUST') {
+    if (!quantity || (numQuantity <= 0 && actionType !== 'ADJUST')) {
       setError('Please enter a valid quantity');
       return;
     }
@@ -96,24 +105,24 @@ export const StockActionModal = ({
       isOpen={isOpen}
       onClose={onClose}
       title="Stock Inventory Mutation"
-      subtitle={`${product?.name || product?.product_name} (${product?.sku})`}
+      subtitle={`${product?.name || product?.product_name || 'Item'} (${product?.sku || 'SKU'})`}
     >
       <form onSubmit={handleSubmit} className="space-y-4">
         {error && (
-          <div className="p-3 bg-rose-50 border border-rose-200 text-rose-700 text-xs rounded-lg font-medium">
+          <div className="p-3 bg-rose-50 border border-rose-200 text-rose-700 text-xs rounded-xl font-semibold">
             {error}
           </div>
         )}
 
         {/* Action Type Tabs */}
-        <div className="grid grid-cols-3 gap-2 p-1 bg-slate-100 dark:bg-slate-800 rounded-xl">
+        <div className="grid grid-cols-3 gap-2 p-1 bg-slate-100 rounded-xl border border-slate-200/60">
           <button
             type="button"
             onClick={() => setActionType('IN')}
-            className={`py-2 text-xs font-semibold rounded-lg flex items-center justify-center gap-1.5 transition-colors ${
+            className={`py-2 text-xs font-bold rounded-lg flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
               actionType === 'IN'
-                ? 'bg-emerald-600 text-white shadow-sm'
-                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
+                ? 'bg-emerald-600 text-white shadow-xs'
+                : 'text-slate-600 hover:text-slate-900'
             }`}
           >
             <ArrowDownLeft className="w-3.5 h-3.5" />
@@ -122,10 +131,10 @@ export const StockActionModal = ({
           <button
             type="button"
             onClick={() => setActionType('OUT')}
-            className={`py-2 text-xs font-semibold rounded-lg flex items-center justify-center gap-1.5 transition-colors ${
+            className={`py-2 text-xs font-bold rounded-lg flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
               actionType === 'OUT'
-                ? 'bg-rose-600 text-white shadow-sm'
-                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
+                ? 'bg-rose-600 text-white shadow-xs'
+                : 'text-slate-600 hover:text-slate-900'
             }`}
           >
             <ArrowUpRight className="w-3.5 h-3.5" />
@@ -134,10 +143,10 @@ export const StockActionModal = ({
           <button
             type="button"
             onClick={() => setActionType('ADJUST')}
-            className={`py-2 text-xs font-semibold rounded-lg flex items-center justify-center gap-1.5 transition-colors ${
+            className={`py-2 text-xs font-bold rounded-lg flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
               actionType === 'ADJUST'
-                ? 'bg-amber-600 text-white shadow-sm'
-                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
+                ? 'bg-amber-600 text-white shadow-xs'
+                : 'text-slate-600 hover:text-slate-900'
             }`}
           >
             <RefreshCw className="w-3.5 h-3.5" />
@@ -146,12 +155,12 @@ export const StockActionModal = ({
         </div>
 
         {/* Current vs Projected preview */}
-        <div className="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200/60 dark:border-slate-700/60 flex items-center justify-between text-xs">
+        <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200/80 flex items-center justify-between text-xs">
           <div>
             <span className="text-slate-500 block text-[10px] uppercase font-bold tracking-wider">
               Current Available
             </span>
-            <span className="text-sm font-bold text-slate-900 dark:text-slate-100 font-mono">
+            <span className="text-sm font-extrabold text-slate-900 font-mono">
               {formatNumber(currentStock)} {product?.unit || 'pcs'}
             </span>
           </div>
@@ -163,7 +172,7 @@ export const StockActionModal = ({
               Projected Stock
             </span>
             <span
-              className={`text-sm font-bold font-mono ${
+              className={`text-sm font-extrabold font-mono ${
                 isInvalidOut
                   ? 'text-rose-600'
                   : actionType === 'IN'
@@ -188,14 +197,14 @@ export const StockActionModal = ({
         />
 
         <div className="space-y-1.5">
-          <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+          <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
             Operational Audit Reason *
           </label>
           <textarea
             rows="2"
             value={reason}
             onChange={(e) => setReason(e.target.value)}
-            className="block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 text-sm p-3 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="block w-full rounded-xl border border-slate-300 bg-white text-slate-900 text-sm p-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 shadow-xs"
             placeholder={
               actionType === 'IN'
                 ? 'e.g. Supplier replenishment shipment PO #8210'
@@ -206,7 +215,7 @@ export const StockActionModal = ({
           />
         </div>
 
-        <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-100 dark:border-slate-800">
+        <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-100">
           <Button variant="ghost" onClick={onClose} disabled={isSubmitting}>
             Cancel
           </Button>
@@ -227,4 +236,3 @@ export const StockActionModal = ({
     </Modal>
   );
 };
-

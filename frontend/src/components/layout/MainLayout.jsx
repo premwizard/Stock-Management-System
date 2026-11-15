@@ -4,7 +4,7 @@ import { Navbar } from './Navbar';
 
 export const MainLayout = () => {
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex transition-colors duration-150">
+    <div className="min-h-screen bg-slate-50 flex">
       <Sidebar />
       <div className="flex-1 flex flex-col min-w-0">
         <Navbar />
@@ -15,4 +15,3 @@ export const MainLayout = () => {
     </div>
   );
 };
-

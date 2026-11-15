@@ -13,31 +13,31 @@ export const Pagination = ({
   const endItem = Math.min(page * limit, totalItems);
 
   return (
-    <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-4 py-3 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 text-xs text-slate-600 dark:text-slate-400">
+    <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-4 py-3 bg-white border-t border-slate-200/80 text-xs text-slate-600">
       <div>
-        Showing <span className="font-semibold text-slate-900 dark:text-slate-100">{startItem}</span> to{' '}
-        <span className="font-semibold text-slate-900 dark:text-slate-100">{endItem}</span> of{' '}
-        <span className="font-semibold text-slate-900 dark:text-slate-100">{totalItems}</span> results
+        Showing <span className="font-bold text-slate-900">{startItem}</span> to{' '}
+        <span className="font-bold text-slate-900">{endItem}</span> of{' '}
+        <span className="font-bold text-slate-900">{totalItems}</span> results
       </div>
 
       <div className="flex items-center gap-1.5">
         <button
           onClick={() => onPageChange(page - 1)}
           disabled={page <= 1}
-          className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+          className="p-1.5 rounded-lg border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors shadow-2xs"
           title="Previous page"
         >
           <ChevronLeft className="w-4 h-4" />
         </button>
 
-        <span className="px-3 py-1 font-medium text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-800 rounded-lg">
+        <span className="px-3 py-1 font-semibold text-slate-700 bg-slate-100/80 rounded-lg border border-slate-200/50">
           Page {page} of {totalPages}
         </span>
 
         <button
           onClick={() => onPageChange(page + 1)}
           disabled={page >= totalPages}
-          className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+          className="p-1.5 rounded-lg border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors shadow-2xs"
           title="Next page"
         >
           <ChevronRight className="w-4 h-4" />
@@ -46,4 +46,3 @@ export const Pagination = ({
     </div>
   );
 };
-

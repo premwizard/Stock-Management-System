@@ -15,35 +15,34 @@ export const Input = ({
       {label && (
         <label
           htmlFor={inputId}
-          className="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider"
+          className="block text-xs font-bold text-slate-700 uppercase tracking-wider"
         >
           {label}
         </label>
       )}
-      <div className="relative rounded-lg shadow-sm">
+      <div className="relative rounded-xl shadow-xs">
         {Icon && (
-          <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
+          <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400">
             <Icon className="h-4 w-4" />
           </div>
         )}
         <input
           id={inputId}
           type={type}
-          className={`block w-full rounded-lg border text-sm transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-offset-0 ${
-            Icon ? 'pl-9' : 'pl-3'
-          } pr-3 py-2 ${
+          className={`block w-full rounded-xl border text-sm transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-offset-0 ${
+            Icon ? 'pl-9' : 'pl-3.5'
+          } pr-3.5 py-2.5 ${
             error
-              ? 'border-rose-300 bg-rose-50/30 text-rose-900 focus:border-rose-500 focus:ring-rose-200 dark:border-rose-800 dark:bg-rose-950/20 dark:text-rose-300'
-              : 'border-slate-300 bg-white text-slate-900 focus:border-indigo-500 focus:ring-indigo-200 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:focus:border-indigo-500'
+              ? 'border-rose-300 bg-rose-50/40 text-rose-900 focus:border-rose-500 focus:ring-rose-200'
+              : 'border-slate-300 bg-white text-slate-900 placeholder:text-slate-400 focus:border-indigo-600 focus:ring-indigo-100'
           } ${className}`}
           {...props}
         />
       </div>
-      {error && <p className="text-xs text-rose-600 dark:text-rose-400 font-medium">{error}</p>}
+      {error && <p className="text-xs text-rose-600 font-semibold">{error}</p>}
       {helperText && !error && (
-        <p className="text-xs text-slate-500 dark:text-slate-400">{helperText}</p>
+        <p className="text-xs text-slate-500">{helperText}</p>
       )}
     </div>
   );
 };
-

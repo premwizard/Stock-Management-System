@@ -34,20 +34,20 @@ export const StockHistory = () => {
   const meta = data?.meta || { page: 1, limit: 20, totalItems: 0, totalPages: 1 };
 
   return (
-    <div className="space-y-6 animate-fadeIn">
+    <div className="space-y-6 animate-fadeIn pb-12">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-slate-200">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
             Stock Movement History
           </h1>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+          <p className="text-xs sm:text-sm text-slate-500 mt-1">
             Complete immutable ledger of all stock-in receipts, sales dispatches, and inventory audit counts.
           </p>
         </div>
 
         {/* Filter by Type */}
-        <div className="flex items-center gap-1.5 p-1 bg-slate-100 dark:bg-slate-800 rounded-xl">
+        <div className="flex items-center gap-1.5 p-1 bg-slate-100 rounded-xl border border-slate-200/60 shadow-2xs">
           {[
             { id: '', label: 'All Movements' },
             { id: 'IN', label: 'Stock IN' },
@@ -60,10 +60,10 @@ export const StockHistory = () => {
                 setMovementType(type.id);
                 setPage(1);
               }}
-              className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors ${
+              className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer ${
                 movementType === type.id
-                  ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 shadow-sm'
-                  : 'text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200'
+                  ? 'bg-white text-indigo-700 shadow-xs'
+                  : 'text-slate-600 hover:text-slate-900'
               }`}
             >
               {type.label}
@@ -73,7 +73,7 @@ export const StockHistory = () => {
       </div>
 
       {/* Movements Table */}
-      <Card className="overflow-hidden">
+      <Card className="overflow-hidden border border-slate-200/80 bg-white">
         {isLoading ? (
           <TableSkeleton rows={10} cols={6} />
         ) : movements.length === 0 ? (
@@ -86,39 +86,39 @@ export const StockHistory = () => {
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs border-collapse">
               <thead>
-                <tr className="bg-slate-50/75 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-800 text-[11px] font-semibold uppercase text-slate-500 dark:text-slate-400 tracking-wider">
-                  <th className="py-3 px-4">Timestamp</th>
-                  <th className="py-3 px-4">Product & Category</th>
-                  <th className="py-3 px-4">SKU</th>
-                  <th className="py-3 px-4 text-center">Type</th>
-                  <th className="py-3 px-4 text-right">Units Changed</th>
-                  <th className="py-3 px-4 text-right">Stock Transition</th>
-                  <th className="py-3 px-4">Operational Reason</th>
+                <tr className="bg-slate-50 border-b border-slate-200 text-[11px] font-bold uppercase text-slate-500 tracking-wider">
+                  <th className="py-3.5 px-4">Timestamp</th>
+                  <th className="py-3.5 px-4">Product & Category</th>
+                  <th className="py-3.5 px-4">SKU</th>
+                  <th className="py-3.5 px-4 text-center">Type</th>
+                  <th className="py-3.5 px-4 text-right">Units Changed</th>
+                  <th className="py-3.5 px-4 text-right">Stock Transition</th>
+                  <th className="py-3.5 px-4">Operational Reason</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+              <tbody className="divide-y divide-slate-100">
                 {movements.map((m) => {
                   return (
                     <tr
                       key={m.id}
-                      className="hover:bg-slate-50/50 dark:hover:bg-slate-850/50 transition-colors"
+                      className="hover:bg-slate-50/80 transition-colors"
                     >
-                      <td className="py-3.5 px-4 text-slate-500 whitespace-nowrap">
+                      <td className="py-3.5 px-4 text-slate-500 whitespace-nowrap font-medium">
                         {formatDate(m.created_at)}
                       </td>
 
                       <td className="py-3.5 px-4">
                         <Link
                           to={`/inventory/${m.product_id}`}
-                          className="font-semibold text-slate-900 dark:text-slate-100 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors block truncate max-w-xs"
+                          className="font-bold text-slate-900 hover:text-indigo-600 transition-colors block truncate max-w-xs"
                         >
                           {m.product_name}
                         </Link>
-                        <span className="text-[11px] text-slate-400">{m.category_name}</span>
+                        <span className="text-[11px] text-slate-500 font-medium">{m.category_name}</span>
                       </td>
 
                       <td className="py-3.5 px-4">
-                        <span className="font-mono text-[11px] bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded text-slate-700 dark:text-slate-300">
+                        <span className="font-mono text-[11px] bg-slate-100 px-2 py-0.5 rounded text-slate-700 font-bold border border-slate-200/60">
                           {m.sku}
                         </span>
                       </td>
@@ -130,7 +130,7 @@ export const StockHistory = () => {
                               ? 'success'
                               : m.movement_type === 'OUT'
                               ? 'danger'
-                              : 'warning'
+                              : 'purple'
                           }
                         >
                           {m.movement_type === 'IN' ? (
@@ -146,12 +146,12 @@ export const StockHistory = () => {
 
                       <td className="py-3.5 px-4 text-right">
                         <span
-                          className={`font-mono font-bold ${
+                          className={`font-mono font-extrabold ${
                             m.movement_type === 'OUT'
                               ? 'text-rose-600'
                               : m.movement_type === 'IN'
                               ? 'text-emerald-600'
-                              : 'text-amber-600'
+                              : 'text-purple-600'
                           }`}
                         >
                           {m.movement_type === 'OUT' ? '-' : '+'}
@@ -162,12 +162,12 @@ export const StockHistory = () => {
 
                       <td className="py-3.5 px-4 text-right font-mono text-[11px] text-slate-500 whitespace-nowrap">
                         <span>{formatNumber(m.previous_quantity)}</span> &rarr;{' '}
-                        <span className="font-bold text-slate-800 dark:text-slate-200">
+                        <span className="font-extrabold text-slate-900">
                           {formatNumber(m.new_quantity)}
                         </span>
                       </td>
 
-                      <td className="py-3.5 px-4 text-slate-600 dark:text-slate-300 max-w-sm truncate">
+                      <td className="py-3.5 px-4 text-slate-600 max-w-sm truncate font-medium">
                         {m.reason}
                       </td>
                     </tr>

@@ -1,9 +1,13 @@
-import { useQuery } from '@tanstack/react-query';
+import { useState } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { dashboardService } from '../services/dashboard.service';
+import { categoryService } from '../services/category.service';
 import { StatCard } from '../components/dashboard/StatCard';
 import { CategoryDistributionChart } from '../components/dashboard/CategoryDistributionChart';
 import { RecentMovementsCard } from '../components/dashboard/RecentMovementsCard';
 import { LowStockAlertCard } from '../components/dashboard/LowStockAlertCard';
+import { ProductFormModal } from '../components/inventory/ProductFormModal';
+import { StockActionModal } from '../components/inventory/StockActionModal';
 import {
   Package,
   Layers,
@@ -13,12 +17,23 @@ import {
   AlertOctagon,
   RefreshCw,
   Search,
-  Plus
+  Plus,
+  ShieldCheck,
+  Zap
 } from 'lucide-react';
 import { Button } from '../components/common/Button';
+import { Card } from '../components/common/Card';
 import { Link } from 'react-router-dom';
+import { formatNumber } from '../utils/formatters';
 
 export default function Dashboard() {
+  const queryClient = useQueryClient();
+
+  // Modals state for fast dashboard actions
+  const [isProductModalOpen, setIsProductModalOpen] = useState(false);
+  const [isStockModalOpen, setIsStockModalOpen] = useState(false);
+  const [selectedStockProduct, setSelectedStockProduct] = useState(null);
+
   const {
     data: summaryData,
     isLoading: isSummaryLoading,
@@ -53,113 +68,248 @@ export default function Dashboard() {
     queryFn: () => dashboardService.getLowStock(10)
   });
 
+  const { data: categoriesData } = useQuery({
+    queryKey: ['categories-all'],
+    queryFn: () => categoryService.getAll(false)
+  });
+
   const summary = summaryData?.data || {};
   const distribution = distData?.data || [];
   const movements = movementsData?.data || [];
   const lowStockItems = lowStockData?.data || [];
+  const categories = categoriesData?.data || [];
+
+  // Compute Health Metrics
+  const totalProducts = summary.totalProducts || 0;
+  const inStockCount = summary.inStockCount || 0;
+  const lowStockCount = summary.lowStockCount || 0;
+  const outOfStockCount = summary.outOfStockCount || 0;
+
+  const inStockPct = totalProducts > 0 ? ((inStockCount / totalProducts) * 100).toFixed(1) : 0;
+  const lowStockPct = totalProducts > 0 ? ((lowStockCount / totalProducts) * 100).toFixed(1) : 0;
+  const outOfStockPct = totalProducts > 0 ? ((outOfStockCount / totalProducts) * 100).toFixed(1) : 0;
+
+  const handleRestockProduct = (item) => {
+    setSelectedStockProduct({
+      id: item.product_id,
+      name: item.product_name,
+      sku: item.sku,
+      quantity: item.quantity,
+      unit: item.unit
+    });
+    setIsStockModalOpen(true);
+  };
+
+  const handleRefreshAll = () => {
+    refetchSummary();
+    queryClient.invalidateQueries({ queryKey: ['dashboard-distribution'] });
+    queryClient.invalidateQueries({ queryKey: ['dashboard-recent-movements'] });
+    queryClient.invalidateQueries({ queryKey: ['dashboard-low-stock'] });
+  };
 
   return (
-    <div className="space-y-8 animate-fadeIn">
-      {/* Top Banner / Hero */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-200 dark:border-slate-800">
+    <div className="space-y-8 animate-fadeIn pb-12">
+      {/* Top Banner / Executive Control Strip */}
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-6 border-b border-slate-200">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">
-            Inventory Executive Dashboard
-          </h1>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-            Real-time warehouse KPIs, multi-category stock allocation, and transactional audit ledger.
+          <div className="flex items-center gap-2.5">
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+              Warehouse Command Center
+            </h1>
+            <span className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-200">
+              <Zap className="w-3 h-3 text-indigo-600" />
+              <span>Real-Time Engine</span>
+            </span>
+          </div>
+          <p className="text-xs sm:text-sm text-slate-500 mt-1">
+            Aggregated warehouse metrics, single-query smart indexing, and verified PostgreSQL transactions.
           </p>
         </div>
 
-        <div className="flex items-center gap-2.5">
+        <div className="flex flex-wrap items-center gap-2.5">
           <Button
             variant="outline"
             size="sm"
-            onClick={() => refetchSummary()}
+            onClick={handleRefreshAll}
             isLoading={isSummaryFetching}
             icon={RefreshCw}
           >
-            Refresh
+            Refresh Data
           </Button>
           <Link to="/search">
             <Button variant="secondary" size="sm" icon={Search}>
               Smart Search
             </Button>
           </Link>
-          <Link to="/inventory">
-            <Button variant="primary" size="sm" icon={Plus}>
-              Manage Products
-            </Button>
-          </Link>
+          <Button
+            variant="primary"
+            size="sm"
+            icon={Plus}
+            onClick={() => setIsProductModalOpen(true)}
+          >
+            New Product
+          </Button>
         </div>
       </div>
 
       {/* 6 Key Stat Cards Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
         <StatCard
-          title="Total Products"
+          title="Total SKUs"
           value={summary.totalProducts}
-          subtitle="Active SKUs catalogue"
+          subtitle="Registered catalogue items"
           icon={Package}
           color="indigo"
+          badgeText="Active"
           isLoading={isSummaryLoading}
         />
         <StatCard
-          title="Total Stock Units"
+          title="Stock Volume"
           value={summary.totalStockUnits}
-          subtitle="Sum of warehouse units"
+          subtitle="Total warehouse units"
           icon={Layers}
           color="blue"
+          badgeText="In Storage"
           isLoading={isSummaryLoading}
         />
         <StatCard
           title="Categories"
           value={summary.totalCategories}
-          subtitle="Product classifications"
+          subtitle="Automotive divisions"
           icon={FolderTree}
           color="purple"
+          badgeText="Divisions"
           isLoading={isSummaryLoading}
         />
         <StatCard
-          title="In Stock"
+          title="Healthy Stock"
           value={summary.inStockCount}
-          subtitle="Above threshold"
+          subtitle="Above safety threshold"
           icon={CheckCircle2}
           color="emerald"
+          badgeText={`${inStockPct}%`}
           isLoading={isSummaryLoading}
         />
         <StatCard
           title="Low Stock"
           value={summary.lowStockCount}
-          subtitle="Re-order attention needed"
+          subtitle="Requires replenishment"
           icon={AlertTriangle}
           color="amber"
+          badgeText={`${lowStockPct}%`}
           isLoading={isSummaryLoading}
         />
         <StatCard
           title="Out of Stock"
           value={summary.outOfStockCount}
-          subtitle="Zero available stock"
+          subtitle="Zero available units"
           icon={AlertOctagon}
           color="rose"
+          badgeText={`${outOfStockPct}%`}
           isLoading={isSummaryLoading}
         />
       </div>
 
-      {/* Main Charts & Breakdown Section */}
+      {/* Warehouse Health Index Ratio Widget */}
+      <Card className="p-5 border border-slate-200/80 bg-gradient-to-r from-white via-slate-50/50 to-indigo-50/20 shadow-xs">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 rounded-xl bg-indigo-600 text-white shadow-xs">
+              <ShieldCheck className="w-5 h-5" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h3 className="text-sm font-bold text-slate-900">Catalogue Health Assessment</h3>
+                <span className="text-[11px] font-extrabold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full">
+                  {inStockPct}% Operational
+                </span>
+              </div>
+              <p className="text-xs text-slate-500 mt-0.5">
+                Proportion of active catalogue meeting minimum safety thresholds
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-4 text-xs font-semibold">
+            <Link
+              to="/inventory?status=in_stock"
+              className="flex items-center gap-1.5 text-emerald-700 hover:underline"
+            >
+              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+              <span>In Stock: {formatNumber(inStockCount)} ({inStockPct}%)</span>
+            </Link>
+            <Link
+              to="/inventory?status=low_stock"
+              className="flex items-center gap-1.5 text-amber-700 hover:underline"
+            >
+              <span className="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
+              <span>Low Stock: {formatNumber(lowStockCount)} ({lowStockPct}%)</span>
+            </Link>
+            <Link
+              to="/inventory?status=out_of_stock"
+              className="flex items-center gap-1.5 text-rose-700 hover:underline"
+            >
+              <span className="w-2.5 h-2.5 rounded-full bg-rose-500"></span>
+              <span>Depleted: {formatNumber(outOfStockCount)} ({outOfStockPct}%)</span>
+            </Link>
+          </div>
+        </div>
+
+        {/* Multi-segmented Progress Bar */}
+        <div className="w-full bg-slate-200 h-2.5 rounded-full mt-4 flex overflow-hidden shadow-inner">
+          <div
+            className="bg-emerald-500 h-full transition-all duration-500"
+            style={{ width: `${inStockPct}%` }}
+            title={`Healthy: ${inStockPct}%`}
+          />
+          <div
+            className="bg-amber-400 h-full transition-all duration-500"
+            style={{ width: `${lowStockPct}%` }}
+            title={`Low Stock: ${lowStockPct}%`}
+          />
+          <div
+            className="bg-rose-500 h-full transition-all duration-500"
+            style={{ width: `${outOfStockPct}%` }}
+            title={`Depleted: ${outOfStockPct}%`}
+          />
+        </div>
+      </Card>
+
+      {/* Main Charts & Analytics Row */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2">
           <CategoryDistributionChart data={distribution} isLoading={isDistLoading} />
         </div>
         <div className="lg:col-span-1">
-          <LowStockAlertCard items={lowStockItems} isLoading={isLowStockLoading} />
+          <LowStockAlertCard
+            items={lowStockItems}
+            isLoading={isLowStockLoading}
+            onRestockClick={handleRestockProduct}
+          />
         </div>
       </div>
 
-      {/* Recent Activity Table Card */}
+      {/* Transactional Audit Grid */}
       <div className="grid grid-cols-1 gap-6">
         <RecentMovementsCard movements={movements} isLoading={isMovementsLoading} />
       </div>
+
+      {/* Modals for Fast Operations */}
+      <ProductFormModal
+        isOpen={isProductModalOpen}
+        onClose={() => setIsProductModalOpen(false)}
+        categories={categories}
+      />
+
+      <StockActionModal
+        isOpen={isStockModalOpen}
+        onClose={() => {
+          setIsStockModalOpen(false);
+          setSelectedStockProduct(null);
+        }}
+        product={selectedStockProduct}
+        initialAction="IN"
+      />
     </div>
   );
 }

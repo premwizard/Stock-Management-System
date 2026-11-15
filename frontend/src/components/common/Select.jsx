@@ -14,17 +14,17 @@ export const Select = ({
       {label && (
         <label
           htmlFor={selectId}
-          className="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider"
+          className="block text-xs font-bold text-slate-700 uppercase tracking-wider"
         >
           {label}
         </label>
       )}
       <select
         id={selectId}
-        className={`block w-full rounded-lg border text-sm py-2 px-3 transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-offset-0 ${
+        className={`block w-full rounded-xl border text-sm py-2.5 px-3.5 transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-offset-0 ${
           error
-            ? 'border-rose-300 bg-rose-50/30 text-rose-900 focus:border-rose-500 focus:ring-rose-200 dark:border-rose-800 dark:bg-rose-950/20'
-            : 'border-slate-300 bg-white text-slate-900 focus:border-indigo-500 focus:ring-indigo-200 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100'
+            ? 'border-rose-300 bg-rose-50/40 text-rose-900 focus:border-rose-500 focus:ring-rose-200'
+            : 'border-slate-300 bg-white text-slate-900 focus:border-indigo-600 focus:ring-indigo-100 shadow-xs'
         } ${className}`}
         {...props}
       >
@@ -35,8 +35,7 @@ export const Select = ({
           </option>
         ))}
       </select>
-      {error && <p className="text-xs text-rose-600 dark:text-rose-400 font-medium">{error}</p>}
+      {error && <p className="text-xs text-rose-600 font-semibold">{error}</p>}
     </div>
   );
 };
-
