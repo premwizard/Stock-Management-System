@@ -12,7 +12,8 @@
     "db:migrate": "node src/database/migrate.js",
     "db:seed": "node src/database/seed.js",
     "db:reset": "node src/database/reset.js",
-    "lint": "eslint src/"
+    "lint": "eslint src/",
+    "test": "node tests/foundation.test.js"
   },
   "dependencies": {
     "cors": "^2.8.5",
