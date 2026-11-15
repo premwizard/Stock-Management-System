@@ -1,0 +1,6 @@
+import { ApiError } from '../utils/ApiError.js';
+
+export const notFoundHandler = (req, res, next) => {
+  next(ApiError.notFound(`Endpoint not found: ${req.method} ${req.originalUrl}`));
+};
+
