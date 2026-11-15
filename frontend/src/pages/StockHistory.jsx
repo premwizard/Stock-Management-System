@@ -170,7 +170,19 @@ export const StockHistory = () => {
                         </td>
 
                         <td className="py-3.5 px-4 text-slate-600 max-w-sm truncate font-medium">
-                          {m.reason}
+                          {m.reason?.startsWith('Stock Request') ? (
+                            <Link
+                              to="/stock-requests"
+                              className="inline-flex items-center gap-1 font-semibold text-indigo-700 hover:text-indigo-900"
+                              title="View in Stock Request Ledger"
+                            >
+                              <span className="font-mono bg-indigo-50 px-1.5 py-0.5 rounded border border-indigo-100 text-[11px] font-bold">
+                                {m.reason}
+                              </span>
+                            </Link>
+                          ) : (
+                            m.reason
+                          )}
                         </td>
                       </tr>
                     );
@@ -256,7 +268,13 @@ export const StockHistory = () => {
 
                   <p className="text-xs text-slate-600 bg-slate-50/50 p-2 rounded-lg border border-slate-100 font-medium">
                     <span className="font-bold text-slate-500 mr-1">Reason:</span>
-                    {m.reason}
+                    {m.reason?.startsWith('Stock Request') ? (
+                      <Link to="/stock-requests" className="text-indigo-700 font-bold hover:underline">
+                        {m.reason}
+                      </Link>
+                    ) : (
+                      m.reason
+                    )}
                   </p>
                 </div>
               ))}

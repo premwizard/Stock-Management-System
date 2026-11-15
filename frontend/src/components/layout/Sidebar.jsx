@@ -3,6 +3,7 @@ import {
   LayoutDashboard,
   Package,
   Search,
+  ShoppingCart,
   FolderTree,
   History,
   Settings,
@@ -15,6 +16,7 @@ export const Sidebar = ({ onNavigate, onClose, isMobile = false }) => {
   const mainNavItems = [
     { label: 'Dashboard', path: '/', icon: LayoutDashboard },
     { label: 'Smart Search', path: '/search', icon: Search, badge: 'FAST', badgeColor: 'bg-indigo-600' },
+    { label: 'Stock Request', path: '/stock-requests', icon: ShoppingCart },
     { label: 'Inventory Catalogue', path: '/inventory', icon: Package }
   ];
 

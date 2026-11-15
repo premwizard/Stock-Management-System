@@ -182,17 +182,18 @@ export class InventoryRepository {
     quantity,
     previousQuantity,
     newQuantity,
-    reason
+    reason,
+    stockRequestId = null
   }) {
     const res = await client.query(
       `
       INSERT INTO stock_movements (
-        product_id, movement_type, quantity, previous_quantity, new_quantity, reason
+        product_id, movement_type, quantity, previous_quantity, new_quantity, reason, stock_request_id
       )
-      VALUES ($1, $2, $3, $4, $5, $6)
-      RETURNING id, product_id, movement_type, quantity, previous_quantity, new_quantity, reason, created_at;
+      VALUES ($1, $2, $3, $4, $5, $6, $7)
+      RETURNING id, product_id, movement_type, quantity, previous_quantity, new_quantity, reason, stock_request_id, created_at;
     `,
-      [productId, movementType, quantity, previousQuantity, newQuantity, reason]
+      [productId, movementType, quantity, previousQuantity, newQuantity, reason, stockRequestId]
     );
     return res.rows[0];
   }
@@ -204,6 +205,7 @@ export class InventoryRepository {
     page = 1,
     limit = 20,
     productId,
+    stockRequestId,
     movementType,
     startDate,
     endDate
@@ -215,6 +217,11 @@ export class InventoryRepository {
     if (productId) {
       values.push(productId);
       conditions.push(`sm.product_id = $${values.length}`);
+    }
+
+    if (stockRequestId) {
+      values.push(stockRequestId);
+      conditions.push(`sm.stock_request_id = $${values.length}`);
     }
 
     if (movementType) {
@@ -254,6 +261,7 @@ export class InventoryRepository {
         sm.previous_quantity,
         sm.new_quantity,
         sm.reason,
+        sm.stock_request_id,
         sm.created_at,
         p.name AS product_name,
         p.sku,
@@ -294,6 +302,7 @@ export class InventoryRepository {
         sm.previous_quantity,
         sm.new_quantity,
         sm.reason,
+        sm.stock_request_id,
         sm.created_at
       FROM stock_movements sm
       WHERE sm.product_id = $1
