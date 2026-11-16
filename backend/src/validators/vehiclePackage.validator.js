@@ -85,3 +85,4 @@ export const vehiclePackageIdParamSchema = z.object({
 export const expandPackageQuerySchema = z.object({
   multiplier: z.coerce.number().int().min(1, 'Multiplier must be at least 1').default(1)
 });
+

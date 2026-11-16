@@ -437,9 +437,19 @@ export default function CheckoutSummary() {
                               <span className="font-bold text-slate-900 block truncate max-w-xs">
                                 {item.name}
                               </span>
-                              <span className="text-[10px] text-slate-400 font-medium">
-                                {item.brand} &middot; {item.category}
-                              </span>
+                              <div className="flex items-center gap-1.5 flex-wrap mt-0.5">
+                                <span className="text-[10px] text-slate-400 font-medium">
+                                  {item.brand} &middot; {item.category}
+                                </span>
+                                {item.sourcePackages && item.sourcePackages.map((sp, idx) => (
+                                  <span
+                                    key={idx}
+                                    className="px-1.5 py-0.2 rounded text-[9px] font-extrabold bg-indigo-50 text-indigo-700 border border-indigo-100"
+                                  >
+                                    {sp}
+                                  </span>
+                                ))}
+                              </div>
                             </div>
                           </div>
                         </td>
@@ -538,9 +548,21 @@ export default function CheckoutSummary() {
                           <h4 className="font-bold text-xs text-slate-900 line-clamp-1">
                             {item.name}
                           </h4>
-                          <span className="font-mono text-[10px] text-slate-500 font-semibold">
+                          <span className="font-mono text-[10px] text-slate-500 font-semibold block">
                             {item.sku} &middot; {item.category}
                           </span>
+                          {item.sourcePackages && (
+                            <div className="flex flex-wrap gap-1 mt-1">
+                              {item.sourcePackages.map((sp, idx) => (
+                                <span
+                                  key={idx}
+                                  className="px-1.5 py-0.2 rounded text-[9px] font-extrabold bg-indigo-50 text-indigo-700 border border-indigo-100"
+                                >
+                                  {sp}
+                                </span>
+                              ))}
+                            </div>
+                          )}
                         </div>
                       </div>
 
@@ -759,7 +781,17 @@ export default function CheckoutSummary() {
                         <span className="font-bold text-slate-900 block truncate max-w-xs">
                           {item.name}
                         </span>
-                        <span className="font-mono text-[10px] text-slate-500">{item.sku}</span>
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <span className="font-mono text-[10px] text-slate-500">{item.sku}</span>
+                          {item.sourcePackages && item.sourcePackages.map((sp, idx) => (
+                            <span
+                              key={idx}
+                              className="px-1 py-0.2 rounded text-[8px] font-bold bg-indigo-50 text-indigo-700"
+                            >
+                              {sp}
+                            </span>
+                          ))}
+                        </div>
                       </td>
                       <td className="py-2.5 px-3 text-right font-mono text-slate-600">
                         {avail} {item.unit}

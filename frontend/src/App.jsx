@@ -8,6 +8,7 @@ import StockHistory from './pages/StockHistory';
 import ProductDetails from './pages/ProductDetails';
 import StockRequests from './pages/StockRequests';
 import CheckoutSummary from './pages/CheckoutSummary';
+import VehiclePackages from './pages/VehiclePackages';
 import Settings from './pages/Settings';
 
 export default function App() {
@@ -21,6 +22,7 @@ export default function App() {
           <Route path="search" element={<SmartSearch />} />
           <Route path="stock-requests" element={<StockRequests />} />
           <Route path="stock-requests/checkout" element={<CheckoutSummary />} />
+          <Route path="vehicle-packages" element={<VehiclePackages />} />
           <Route path="categories" element={<Categories />} />
           <Route path="history" element={<StockHistory />} />
           <Route path="settings" element={<Settings />} />

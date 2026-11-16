@@ -1,6 +1,6 @@
 import { VehiclePackageRepository } from '../repositories/vehiclePackage.repository.js';
 import { ApiError } from '../utils/ApiError.js';
-import { getClient, query } from '../config/database.js';
+import { getClient } from '../config/database.js';
 
 export class VehiclePackageService {
   /**

@@ -273,3 +273,4 @@ export class VehiclePackageRepository {
     return res.rows[0] || null;
   }
 }
+

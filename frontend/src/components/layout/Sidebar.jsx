@@ -9,7 +9,8 @@ import {
   Settings,
   Layers,
   ArrowUpRight,
-  X
+  X,
+  Boxes
 } from 'lucide-react';
 
 export const Sidebar = ({ onNavigate, onClose, isMobile = false }) => {
@@ -17,6 +18,7 @@ export const Sidebar = ({ onNavigate, onClose, isMobile = false }) => {
     { label: 'Dashboard', path: '/', icon: LayoutDashboard },
     { label: 'Smart Search', path: '/search', icon: Search, badge: 'FAST', badgeColor: 'bg-indigo-600' },
     { label: 'Stock Request', path: '/stock-requests', icon: ShoppingCart },
+    { label: 'Vehicle Packages', path: '/vehicle-packages', icon: Boxes, badge: 'BUNDLES', badgeColor: 'bg-emerald-600' },
     { label: 'Inventory Catalogue', path: '/inventory', icon: Package }
   ];
 
