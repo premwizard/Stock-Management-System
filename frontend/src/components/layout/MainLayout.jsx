@@ -22,7 +22,7 @@ export const MainLayout = () => {
           />
 
           {/* Slide-over Drawer Content */}
-          <div className="relative z-10 flex flex-col w-72 max-w-[85vw] h-full bg-white shadow-2xl animate-slideRight">
+          <div className="relative z-10 flex flex-col w-72 max-w-[85vw] h-[100dvh] overscroll-contain pb-safe bg-white shadow-2xl animate-slideRight">
             <Sidebar
               isMobile={true}
               onNavigate={() => setIsMobileMenuOpen(false)}

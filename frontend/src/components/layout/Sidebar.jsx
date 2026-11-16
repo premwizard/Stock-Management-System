@@ -94,7 +94,7 @@ export const Sidebar = ({ onNavigate, onClose, isMobile = false }) => {
           {isMobile && onClose && (
             <button
               onClick={onClose}
-              className="p-1.5 text-slate-400 hover:text-slate-700 rounded-lg hover:bg-slate-100 transition-colors"
+              className="p-2 min-h-[40px] min-w-[40px] flex items-center justify-center text-slate-400 hover:text-slate-700 rounded-xl hover:bg-slate-100 transition-colors cursor-pointer"
               aria-label="Close menu"
             >
               <X className="w-5 h-5" />
