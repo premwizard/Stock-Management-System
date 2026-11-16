@@ -94,7 +94,7 @@ export default function ProductDetails() {
             size="sm"
             icon={Edit2}
             onClick={() => setIsEditModalOpen(true)}
-            className="justify-center"
+            className="justify-center min-h-[40px]"
           >
             Edit Specs
           </Button>
@@ -106,7 +106,7 @@ export default function ProductDetails() {
               setStockAction('IN');
               setIsStockModalOpen(true);
             }}
-            className="justify-center"
+            className="justify-center min-h-[40px]"
           >
             Stock IN
           </Button>
@@ -118,7 +118,7 @@ export default function ProductDetails() {
               setStockAction('OUT');
               setIsStockModalOpen(true);
             }}
-            className="justify-center"
+            className="justify-center min-h-[40px]"
           >
             Stock OUT
           </Button>
@@ -130,7 +130,7 @@ export default function ProductDetails() {
               setStockAction('ADJUST');
               setIsStockModalOpen(true);
             }}
-            className="justify-center"
+            className="justify-center min-h-[40px]"
           >
             Audit Count
           </Button>
