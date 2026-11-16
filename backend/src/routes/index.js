@@ -5,6 +5,7 @@ import productRoutes from './product.routes.js';
 import inventoryRoutes from './inventory.routes.js';
 import dashboardRoutes from './dashboard.routes.js';
 import stockRequestRoutes from './stockRequest.routes.js';
+import vehiclePackageRoutes from './vehiclePackage.routes.js';
 
 const router = Router();
 
@@ -14,5 +15,6 @@ router.use('/products', productRoutes);
 router.use('/inventory', inventoryRoutes);
 router.use('/dashboard', dashboardRoutes);
 router.use('/stock-requests', stockRequestRoutes);
+router.use('/vehicle-packages', vehiclePackageRoutes);
 
 export default router;

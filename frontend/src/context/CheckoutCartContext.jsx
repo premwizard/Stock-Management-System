@@ -49,6 +49,9 @@ export const CheckoutCartProvider = ({ children }) => {
     [items]
   );
 
+  /**
+   * Add individual product to cart
+   */
   const addToCart = useCallback((product, quantityToAdd = 1) => {
     if (!product || !product.id) return;
     const available = Number(product.quantity) || 0;
@@ -58,7 +61,9 @@ export const CheckoutCartProvider = ({ children }) => {
       const existing = prev[product.id];
       const currentQty = existing ? existing.requestedQuantity : 0;
       const targetQty = currentQty + Number(quantityToAdd);
-      const validQty = Math.max(1, Math.min(available, targetQty));
+      const validQty = Math.max(1, targetQty);
+
+      const existingPackages = existing?.sourcePackages || [];
 
       return {
         ...prev,
@@ -71,12 +76,86 @@ export const CheckoutCartProvider = ({ children }) => {
           unit: product.unit || 'pcs',
           imageUrl: product.image_url || product.imageUrl || null,
           availableQuantity: available,
-          requestedQuantity: validQty
+          requestedQuantity: validQty,
+          sourcePackages: existingPackages.length > 0 ? existingPackages : ['Individual Part']
         }
       };
     });
   }, []);
 
+  /**
+   * Add a complete vehicle package into the cart in one operation
+   * Expands components and intelligently merges duplicate products
+   */
+  const addPackageToCart = useCallback((expandedPackage, multiplier = 1) => {
+    if (!expandedPackage || !Array.isArray(expandedPackage.items)) return null;
+
+    const mult = Math.max(1, Number(multiplier) || 1);
+    const packageName = expandedPackage.packageName || expandedPackage.name || 'Vehicle Package';
+    const packageLabel = mult > 1 ? `${packageName} (×${mult})` : packageName;
+
+    let addedCount = 0;
+    let mergedCount = 0;
+    let totalUnitsAdded = 0;
+
+    setItemsMap((prev) => {
+      const next = { ...prev };
+
+      expandedPackage.items.forEach((comp) => {
+        const prodId = comp.productId || comp.product_id;
+        if (!prodId) return;
+
+        const qtyPerVehicle = Number(comp.requiredPerVehicle || comp.required_quantity || comp.requestedQuantity);
+        const quantityToAdd = qtyPerVehicle * mult;
+        totalUnitsAdded += quantityToAdd;
+
+        const existing = next[prodId];
+        if (existing) {
+          mergedCount++;
+          const currentPackages = Array.isArray(existing.sourcePackages) ? existing.sourcePackages : [];
+          const updatedPackages = currentPackages.includes(packageLabel)
+            ? currentPackages
+            : [...currentPackages, packageLabel];
+
+          next[prodId] = {
+            ...existing,
+            requestedQuantity: existing.requestedQuantity + quantityToAdd,
+            availableQuantity: comp.availableQuantity !== undefined ? comp.availableQuantity : existing.availableQuantity,
+            sourcePackages: updatedPackages
+          };
+        } else {
+          addedCount++;
+          next[prodId] = {
+            productId: prodId,
+            name: comp.name || comp.product_name,
+            sku: comp.sku,
+            brand: comp.brand || 'Generic',
+            category: comp.category || comp.category_name || 'General',
+            unit: comp.unit || 'pcs',
+            imageUrl: comp.imageUrl || comp.image_url || null,
+            availableQuantity: Number(comp.availableQuantity || comp.quantity || 0),
+            requestedQuantity: quantityToAdd,
+            sourcePackages: [packageLabel]
+          };
+        }
+      });
+
+      return next;
+    });
+
+    return {
+      packageName,
+      multiplier: mult,
+      addedCount,
+      mergedCount,
+      totalUnitsAdded,
+      totalItemsInPackage: expandedPackage.items.length
+    };
+  }, []);
+
+  /**
+   * Update requested quantity for a product in cart
+   */
   const updateQuantity = useCallback((productId, newQuantity) => {
     const qty = Number(newQuantity);
     setItemsMap((prev) => {
@@ -97,6 +176,9 @@ export const CheckoutCartProvider = ({ children }) => {
     });
   }, []);
 
+  /**
+   * Update known available quantity (e.g. from backend verification)
+   */
   const updateAvailableQuantity = useCallback((productId, latestAvailable) => {
     setItemsMap((prev) => {
       const existing = prev[productId];
@@ -111,6 +193,9 @@ export const CheckoutCartProvider = ({ children }) => {
     });
   }, []);
 
+  /**
+   * Remove product from cart
+   */
   const removeFromCart = useCallback((productId) => {
     setItemsMap((prev) => {
       if (!prev[productId]) return prev;
@@ -120,6 +205,9 @@ export const CheckoutCartProvider = ({ children }) => {
     });
   }, []);
 
+  /**
+   * Clear entire cart and stored notes
+   */
   const clearCart = useCallback(() => {
     setItemsMap({});
     setNotesState('');
@@ -140,6 +228,7 @@ export const CheckoutCartProvider = ({ children }) => {
       notes,
       setNotes,
       addToCart,
+      addPackageToCart,
       updateQuantity,
       updateAvailableQuantity,
       removeFromCart,
@@ -153,6 +242,7 @@ export const CheckoutCartProvider = ({ children }) => {
       notes,
       setNotes,
       addToCart,
+      addPackageToCart,
       updateQuantity,
       updateAvailableQuantity,
       removeFromCart,
@@ -170,4 +260,3 @@ export const useCheckoutCart = () => {
   }
   return context;
 };
-

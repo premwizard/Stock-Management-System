@@ -13,13 +13,14 @@
     "db:seed": "node src/database/seed.js",
     "db:reset": "node src/database/reset.js",
     "lint": "eslint src/",
-    "test": "node tests/foundation.test.js && node tests/product_category.test.js && node tests/search.test.js && node tests/inventory.test.js && node tests/dashboard.test.js && node tests/stock_request.test.js",
+    "test": "node tests/foundation.test.js && node tests/product_category.test.js && node tests/search.test.js && node tests/inventory.test.js && node tests/dashboard.test.js && node tests/stock_request.test.js && node tests/vehicle_package.test.js",
     "test:foundation": "node tests/foundation.test.js",
     "test:products": "node tests/product_category.test.js",
     "test:search": "node tests/search.test.js",
     "test:inventory": "node tests/inventory.test.js",
     "test:dashboard": "node tests/dashboard.test.js",
-    "test:stock-requests": "node tests/stock_request.test.js"
+    "test:stock-requests": "node tests/stock_request.test.js",
+    "test:packages": "node tests/vehicle_package.test.js"
   },
   "dependencies": {
     "cors": "^2.8.5",
