@@ -87,7 +87,7 @@ export const RecentMovementsCard = ({ movements = [], isLoading = false }) => {
               return (
                 <div key={mov.id} className="py-3 flex items-center justify-between gap-3 group">
                   <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1.5 flex-wrap">
                       <span
                         className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-extrabold border ${badge.color}`}
                       >
@@ -95,7 +95,7 @@ export const RecentMovementsCard = ({ movements = [], isLoading = false }) => {
                         <span>{badge.label}</span>
                       </span>
 
-                      <p className="text-xs font-bold text-slate-900 truncate group-hover:text-indigo-600 transition-colors">
+                      <p className="text-xs font-bold text-slate-900 truncate max-w-[140px] sm:max-w-none group-hover:text-indigo-600 transition-colors">
                         {mov.product_name}
                       </p>
 

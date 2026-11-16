@@ -110,10 +110,10 @@ export const LowStockAlertCard = ({ items = [], isLoading = false, onRestockClic
                     {onRestockClick && (
                       <button
                         onClick={() => onRestockClick(item)}
-                        className="text-[10px] font-bold text-indigo-600 hover:text-indigo-800 flex items-center gap-1 cursor-pointer"
+                        className="text-[11px] font-bold text-indigo-600 hover:text-indigo-800 flex items-center gap-1 cursor-pointer px-2 py-1 rounded-lg bg-indigo-50/70 hover:bg-indigo-100 min-h-[32px] active:scale-95 transition-all"
                         title="Stock in inventory"
                       >
-                        <PlusCircle className="w-3 h-3" />
+                        <PlusCircle className="w-3.5 h-3.5" />
                         <span>Restock</span>
                       </button>
                     )}

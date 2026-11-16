@@ -133,12 +133,12 @@ export default function Dashboard() {
             onClick={handleRefreshAll}
             isLoading={isSummaryFetching}
             icon={RefreshCw}
-            className="flex-1 sm:flex-initial"
+            className="flex-1 sm:flex-initial min-h-[40px] justify-center"
           >
             Refresh
           </Button>
           <Link to="/search" className="flex-1 sm:flex-initial">
-            <Button variant="secondary" size="sm" icon={Search} className="w-full sm:w-auto">
+            <Button variant="secondary" size="sm" icon={Search} className="w-full sm:w-auto min-h-[40px] justify-center">
               Search
             </Button>
           </Link>
@@ -147,7 +147,7 @@ export default function Dashboard() {
             size="sm"
             icon={Plus}
             onClick={() => setIsProductModalOpen(true)}
-            className="flex-1 sm:flex-initial"
+            className="flex-1 sm:flex-initial min-h-[40px] justify-center"
           >
             + Product
           </Button>
