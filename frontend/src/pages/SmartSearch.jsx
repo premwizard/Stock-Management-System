@@ -198,63 +198,63 @@ export default function SmartSearch() {
       </div>
 
       {/* Real-time Aggregate Metrics Banner */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-3 gap-2 sm:gap-4">
         {/* Total Matching Products */}
-        <Card className="p-5 border border-slate-200/80 bg-white">
+        <Card className="p-3 sm:p-5 border border-slate-200/80 bg-white">
           <div className="flex items-center justify-between">
-            <div className="space-y-1">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
-                Matching Products
+            <div className="space-y-0.5 sm:space-y-1">
+              <span className="text-[9px] sm:text-[11px] font-bold uppercase tracking-wider text-slate-400 block truncate">
+                Products
               </span>
-              <p className="text-2xl sm:text-3xl font-black text-slate-900 font-mono">
+              <p className="text-lg sm:text-2xl lg:text-3xl font-black text-slate-900 font-mono">
                 {isLoading ? '...' : formatNumber(searchData.totalProducts)}
               </p>
             </div>
-            <div className="p-3 rounded-xl bg-indigo-50 text-indigo-600 border border-indigo-100 shadow-2xs">
-              <Package className="w-5 h-5" />
+            <div className="hidden xs:flex p-2 sm:p-3 rounded-xl bg-indigo-50 text-indigo-600 border border-indigo-100 shadow-2xs">
+              <Package className="w-4 h-4 sm:w-5 sm:h-5" />
             </div>
           </div>
-          <p className="text-xs text-slate-500 mt-2 font-medium">
+          <p className="text-[10px] sm:text-xs text-slate-500 mt-1 sm:mt-2 font-medium hidden sm:block">
             {debouncedQuery ? `Products matching '${debouncedQuery}'` : 'All catalogue products'}
           </p>
         </Card>
 
         {/* Total Available Stock Units */}
-        <Card className="p-5 border border-slate-200/80 bg-white">
+        <Card className="p-3 sm:p-5 border border-slate-200/80 bg-white">
           <div className="flex items-center justify-between">
-            <div className="space-y-1">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
-                Total Available Stock
+            <div className="space-y-0.5 sm:space-y-1">
+              <span className="text-[9px] sm:text-[11px] font-bold uppercase tracking-wider text-slate-400 block truncate">
+                Total Stock
               </span>
-              <p className="text-2xl sm:text-3xl font-black text-emerald-600 font-mono">
+              <p className="text-lg sm:text-2xl lg:text-3xl font-black text-emerald-600 font-mono">
                 {isLoading ? '...' : formatNumber(searchData.totalStockUnits)}
               </p>
             </div>
-            <div className="p-3 rounded-xl bg-emerald-50 text-emerald-600 border border-emerald-100 shadow-2xs">
-              <Layers className="w-5 h-5" />
+            <div className="hidden xs:flex p-2 sm:p-3 rounded-xl bg-emerald-50 text-emerald-600 border border-emerald-100 shadow-2xs">
+              <Layers className="w-4 h-4 sm:w-5 sm:h-5" />
             </div>
           </div>
-          <p className="text-xs text-slate-500 mt-2 font-medium">
+          <p className="text-[10px] sm:text-xs text-slate-500 mt-1 sm:mt-2 font-medium hidden sm:block">
             Aggregated units in warehouse storage
           </p>
         </Card>
 
         {/* Database Search Latency */}
-        <Card className="p-5 border border-slate-200/80 bg-white">
+        <Card className="p-3 sm:p-5 border border-slate-200/80 bg-white">
           <div className="flex items-center justify-between">
-            <div className="space-y-1">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
-                Engine Query Latency
+            <div className="space-y-0.5 sm:space-y-1">
+              <span className="text-[9px] sm:text-[11px] font-bold uppercase tracking-wider text-slate-400 block truncate">
+                Latency
               </span>
-              <p className="text-2xl sm:text-3xl font-black text-indigo-600 font-mono">
+              <p className="text-lg sm:text-2xl lg:text-3xl font-black text-indigo-600 font-mono">
                 {isLoading ? '...' : `${meta.executionTimeMs} ms`}
               </p>
             </div>
-            <div className="p-3 rounded-xl bg-indigo-50 text-indigo-600 border border-indigo-100 shadow-2xs">
-              <Zap className="w-5 h-5" />
+            <div className="hidden xs:flex p-2 sm:p-3 rounded-xl bg-indigo-50 text-indigo-600 border border-indigo-100 shadow-2xs">
+              <Zap className="w-4 h-4 sm:w-5 sm:h-5" />
             </div>
           </div>
-          <p className="text-xs text-slate-500 mt-2 font-medium">
+          <p className="text-[10px] sm:text-xs text-slate-500 mt-1 sm:mt-2 font-medium hidden sm:block">
             PostgreSQL GIN trigram index execution
           </p>
         </Card>
@@ -309,8 +309,8 @@ export default function SmartSearch() {
           </div>
         </div>
 
-        {/* View Mode Toggle: Grid vs Table */}
-        <div className="flex items-center gap-2">
+        {/* View Mode Toggle: Grid vs Table (Hidden on small mobile) */}
+        <div className="hidden sm:flex items-center gap-2">
           {isFetching && (
             <span className="text-xs font-semibold text-slate-400 animate-pulse hidden sm:inline">
               Updating results...
@@ -445,22 +445,25 @@ export default function SmartSearch() {
                   <div className="flex items-center gap-1.5">
                     <button
                       onClick={() => handleOpenStock(p, 'IN')}
-                      className="p-2 rounded-xl text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 transition-colors cursor-pointer"
+                      className="p-2 min-h-[38px] min-w-[38px] flex items-center justify-center rounded-xl text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 transition-colors cursor-pointer active:scale-95"
                       title="Quick Stock IN"
+                      aria-label="Stock IN"
                     >
                       <PackagePlus className="w-4 h-4" />
                     </button>
                     <button
                       onClick={() => handleOpenStock(p, 'OUT')}
-                      className="p-2 rounded-xl text-rose-700 bg-rose-50 hover:bg-rose-100 border border-rose-200 transition-colors cursor-pointer"
+                      className="p-2 min-h-[38px] min-w-[38px] flex items-center justify-center rounded-xl text-rose-700 bg-rose-50 hover:bg-rose-100 border border-rose-200 transition-colors cursor-pointer active:scale-95"
                       title="Quick Stock OUT"
+                      aria-label="Stock OUT"
                     >
                       <PackageMinus className="w-4 h-4" />
                     </button>
                     <Link
                       to={`/inventory/${p.id}`}
-                      className="p-2 rounded-xl text-slate-600 hover:text-indigo-600 hover:bg-slate-100 border border-slate-200 transition-colors"
+                      className="p-2 min-h-[38px] min-w-[38px] flex items-center justify-center rounded-xl text-slate-600 hover:text-indigo-600 hover:bg-slate-100 border border-slate-200 transition-colors active:scale-95"
                       title="View Details"
+                      aria-label="View Details"
                     >
                       <ExternalLink className="w-4 h-4" />
                     </Link>

@@ -123,9 +123,9 @@ export default function Inventory() {
 
       {/* Filter and Control Bar */}
       <Card className="p-3.5 sm:p-4 space-y-3 border border-slate-200/80 bg-white">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3">
+        <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3">
           {/* Keyword Search */}
-          <div className="relative">
+          <div className="relative xs:col-span-2 lg:col-span-1">
             <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
             <input
               type="text"
@@ -141,14 +141,14 @@ export default function Inventory() {
 
           {/* Category Filter */}
           <div className="relative">
-            <Filter className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+            <Filter className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
             <select
               value={category}
               onChange={(e) => {
                 setCategory(e.target.value);
                 setPage(1);
               }}
-              className="w-full text-xs sm:text-sm font-semibold rounded-xl pl-9 pr-3 py-2 sm:py-2.5 bg-slate-50 border border-slate-200 text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all shadow-xs"
+              className="w-full text-xs sm:text-sm font-semibold rounded-xl pl-8 sm:pl-9 pr-3 py-2 sm:py-2.5 bg-slate-50 border border-slate-200 text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all shadow-xs truncate"
             >
               <option value="">All Categories</option>
               {categories.map((c) => (
@@ -161,27 +161,27 @@ export default function Inventory() {
 
           {/* Sort By */}
           <div className="relative">
-            <ArrowUpDown className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+            <ArrowUpDown className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
             <select
               value={sort}
               onChange={(e) => setSort(e.target.value)}
-              className="w-full text-xs sm:text-sm font-semibold rounded-xl pl-9 pr-3 py-2 sm:py-2.5 bg-slate-50 border border-slate-200 text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all shadow-xs"
+              className="w-full text-xs sm:text-sm font-semibold rounded-xl pl-8 sm:pl-9 pr-3 py-2 sm:py-2.5 bg-slate-50 border border-slate-200 text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all shadow-xs truncate"
             >
-              <option value="created_at">Sort by Date Added</option>
-              <option value="name">Sort by Product Name</option>
-              <option value="sku">Sort by SKU Code</option>
-              <option value="quantity">Sort by Available Stock</option>
+              <option value="created_at">Date Added</option>
+              <option value="name">Product Name</option>
+              <option value="sku">SKU Code</option>
+              <option value="quantity">Available Stock</option>
             </select>
           </div>
 
           {/* Order Toggle */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 xs:col-span-2 lg:col-span-1">
             <button
               onClick={() => setOrder((prev) => (prev === 'asc' ? 'desc' : 'asc'))}
-              className="flex-1 text-xs py-2 sm:py-2.5 px-3 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 font-bold transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-xs min-h-[38px]"
+              className="flex-1 text-xs py-2 sm:py-2.5 px-3 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 font-bold transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-xs min-h-[38px] active:scale-95"
             >
               <SlidersHorizontal className="w-3.5 h-3.5" />
-              <span>{order.toUpperCase() === 'ASC' ? 'Ascending Order' : 'Descending Order'}</span>
+              <span>{order.toUpperCase() === 'ASC' ? 'Order: Ascending' : 'Order: Descending'}</span>
             </button>
           </div>
         </div>
@@ -303,36 +303,39 @@ export default function Inventory() {
                     <div className="flex items-center gap-1.5 pt-2 border-t border-slate-100">
                       <button
                         onClick={() => handleOpenStockAction(p, 'IN')}
-                        className="flex-1 py-2 px-2 text-xs font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-lg flex items-center justify-center gap-1 cursor-pointer active:scale-95"
+                        className="flex-1 min-h-[38px] py-1.5 px-2 text-xs font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-xl flex items-center justify-center gap-1 cursor-pointer active:scale-95 transition-all"
                       >
                         <PackagePlus className="w-3.5 h-3.5" />
                         <span>+ IN</span>
                       </button>
                       <button
                         onClick={() => handleOpenStockAction(p, 'OUT')}
-                        className="flex-1 py-2 px-2 text-xs font-bold text-rose-700 bg-rose-50 hover:bg-rose-100 border border-rose-200 rounded-lg flex items-center justify-center gap-1 cursor-pointer active:scale-95"
+                        className="flex-1 min-h-[38px] py-1.5 px-2 text-xs font-bold text-rose-700 bg-rose-50 hover:bg-rose-100 border border-rose-200 rounded-xl flex items-center justify-center gap-1 cursor-pointer active:scale-95 transition-all"
                       >
                         <PackageMinus className="w-3.5 h-3.5" />
                         <span>- OUT</span>
                       </button>
                       <button
                         onClick={() => handleOpenStockAction(p, 'ADJUST')}
-                        className="py-2 px-2.5 text-xs font-bold text-amber-700 bg-amber-50 hover:bg-amber-100 border border-amber-200 rounded-lg flex items-center justify-center gap-1 cursor-pointer active:scale-95"
+                        className="min-h-[38px] min-w-[38px] px-2 text-xs font-bold text-amber-700 bg-amber-50 hover:bg-amber-100 border border-amber-200 rounded-xl flex items-center justify-center cursor-pointer active:scale-95 transition-all"
                         title="Audit count"
+                        aria-label="Audit stock"
                       >
                         <SlidersHorizontal className="w-3.5 h-3.5" />
                       </button>
                       <button
                         onClick={() => handleOpenEdit(p)}
-                        className="p-2 text-slate-500 hover:text-indigo-600 bg-slate-50 border border-slate-200 rounded-lg cursor-pointer active:scale-95"
+                        className="min-h-[38px] min-w-[38px] flex items-center justify-center text-slate-500 hover:text-indigo-600 bg-slate-50 border border-slate-200 rounded-xl cursor-pointer active:scale-95 transition-all"
                         title="Edit product"
+                        aria-label="Edit product"
                       >
                         <Edit2 className="w-4 h-4" />
                       </button>
                       <button
                         onClick={() => handleDeleteProduct(p.id, p.name)}
-                        className="p-2 text-slate-500 hover:text-rose-600 bg-slate-50 border border-slate-200 rounded-lg cursor-pointer active:scale-95"
+                        className="min-h-[38px] min-w-[38px] flex items-center justify-center text-slate-500 hover:text-rose-600 bg-slate-50 border border-slate-200 rounded-xl cursor-pointer active:scale-95 transition-all"
                         title="Delete product"
+                        aria-label="Delete product"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>

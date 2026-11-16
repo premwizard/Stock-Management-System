@@ -32,11 +32,11 @@ export const Navbar = ({ onOpenMobileMenu }) => {
 
   return (
     <header className="h-16 bg-white border-b border-slate-200/80 px-3 sm:px-6 flex items-center justify-between sticky top-0 z-30 shadow-xs">
-      <div className="flex items-center gap-2 sm:gap-3 flex-1 max-w-lg">
+      <div className="flex items-center gap-1.5 sm:gap-3 flex-1 min-w-0 max-w-lg">
         {/* Mobile Hamburger Menu Toggle */}
         <button
           onClick={onOpenMobileMenu}
-          className="lg:hidden p-2 -ml-1 text-slate-600 hover:text-slate-900 rounded-xl hover:bg-slate-100 transition-colors flex-shrink-0 cursor-pointer"
+          className="lg:hidden min-w-[42px] min-h-[42px] -ml-1 text-slate-600 hover:text-slate-900 rounded-xl hover:bg-slate-100 transition-colors flex items-center justify-center flex-shrink-0 cursor-pointer active:scale-95"
           aria-label="Toggle navigation menu"
         >
           <Menu className="w-5 h-5" />
@@ -44,13 +44,13 @@ export const Navbar = ({ onOpenMobileMenu }) => {
 
         {/* Quick Search Input */}
         <form onSubmit={handleSearchSubmit} className="w-full relative">
-          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+          <Search className="w-4 h-4 absolute left-2.5 sm:left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
           <input
             type="text"
             value={quickQuery}
             onChange={(e) => setQuickQuery(e.target.value)}
-            placeholder="Search SKUs, parts... (Press Enter)"
-            className="w-full bg-slate-50 border border-slate-200 text-xs sm:text-sm rounded-xl pl-8 sm:pl-9 pr-8 sm:pr-14 py-2 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white focus:border-indigo-500 transition-all shadow-inner"
+            placeholder="Search SKUs, parts..."
+            className="w-full bg-slate-50 border border-slate-200 text-xs sm:text-sm rounded-xl pl-8 sm:pl-9 pr-3 sm:pr-14 py-2 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white focus:border-indigo-500 transition-all shadow-inner"
           />
           <div className="hidden sm:flex absolute right-2.5 top-1/2 -translate-y-1/2 items-center gap-1 pointer-events-none">
             <span className="text-[10px] font-semibold text-slate-400 bg-white border border-slate-200 px-1.5 py-0.5 rounded shadow-xs">
@@ -61,7 +61,7 @@ export const Navbar = ({ onOpenMobileMenu }) => {
       </div>
 
       {/* Right controls */}
-      <div className="flex items-center gap-2 sm:gap-3 ml-2 flex-shrink-0">
+      <div className="flex items-center gap-1 sm:gap-3 ml-1 sm:ml-2 flex-shrink-0">
         {/* DB Status indicator */}
         <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-50 border border-emerald-200 text-xs font-semibold text-emerald-700">
           <span className="relative flex h-2 w-2">
@@ -84,13 +84,13 @@ export const Navbar = ({ onOpenMobileMenu }) => {
         {/* Checkout Cart Pill */}
         <button
           onClick={() => navigate('/stock-requests/checkout')}
-          className="p-2 text-slate-600 hover:text-indigo-600 rounded-xl hover:bg-indigo-50 relative transition-colors cursor-pointer flex items-center justify-center"
+          className="min-h-[40px] min-w-[40px] text-slate-600 hover:text-indigo-600 rounded-xl hover:bg-indigo-50 relative transition-colors cursor-pointer flex items-center justify-center active:scale-95"
           title={totalItems > 0 ? `Checkout Cart (${totalItems} products, ${totalUnits} units)` : 'Checkout Cart is empty'}
           aria-label="View checkout cart"
         >
           <ShoppingCart className="w-4 h-4 sm:w-5 sm:h-5" />
           {totalItems > 0 && (
-            <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 flex items-center justify-center text-[10px] font-extrabold bg-indigo-600 text-white rounded-full leading-none shadow-xs">
+            <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 flex items-center justify-center text-[10px] font-extrabold bg-indigo-600 text-white rounded-full leading-none shadow-xs">
               {totalItems}
             </span>
           )}
@@ -99,7 +99,7 @@ export const Navbar = ({ onOpenMobileMenu }) => {
         {/* Notifications / Alerts Pill */}
         <button
           onClick={() => navigate('/inventory?status=low_stock')}
-          className="p-2 text-slate-500 hover:text-slate-800 rounded-xl hover:bg-slate-100 relative transition-colors cursor-pointer"
+          className="min-h-[40px] min-w-[40px] text-slate-500 hover:text-slate-800 rounded-xl hover:bg-slate-100 relative transition-colors cursor-pointer flex items-center justify-center active:scale-95"
           title={totalAlerts > 0 ? `${totalAlerts} items require attention` : 'No active alerts'}
         >
           <Bell className="w-4 h-4 sm:w-5 sm:h-5" />
