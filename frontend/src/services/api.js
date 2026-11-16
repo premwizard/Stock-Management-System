@@ -25,3 +25,5 @@ export const checkHealth = async () => {
   return apiClient.get('/health');
 };
 
+export default apiClient;
+

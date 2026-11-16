@@ -1,54 +1,49 @@
-import api from './api';
+import { apiClient } from './api';
 
 export const vehiclePackageService = {
   /**
    * List vehicle packages with optional search and active status filters
    */
-  async getAll(params = {}) {
-    const res = await api.get('/vehicle-packages', { params });
-    return res.data;
+  getAll: async (params = {}) => {
+    return apiClient.get('/vehicle-packages', { params });
   },
 
   /**
    * Get single vehicle package details with all components and live stock
    */
-  async getById(id) {
-    const res = await api.get(`/vehicle-packages/${id}`);
-    return res.data;
+  getById: async (id) => {
+    return apiClient.get(`/vehicle-packages/${id}`);
   },
 
   /**
    * Expand package into constituent products with vehicle multiplier
    */
-  async expand(id, multiplier = 1) {
-    const res = await api.get(`/vehicle-packages/${id}/expand`, {
+  expand: async (id, multiplier = 1) => {
+    return apiClient.get(`/vehicle-packages/${id}/expand`, {
       params: { multiplier }
     });
-    return res.data;
   },
 
   /**
    * Create a new vehicle package
    */
-  async create(data) {
-    const res = await api.post('/vehicle-packages', data);
-    return res.data;
+  create: async (data) => {
+    return apiClient.post('/vehicle-packages', data);
   },
 
   /**
    * Update an existing vehicle package
    */
-  async update(id, data) {
-    const res = await api.put(`/vehicle-packages/${id}`, data);
-    return res.data;
+  update: async (id, data) => {
+    return apiClient.put(`/vehicle-packages/${id}`, data);
   },
 
   /**
    * Delete a vehicle package
    */
-  async delete(id) {
-    const res = await api.delete(`/vehicle-packages/${id}`);
-    return res.data;
+  delete: async (id) => {
+    return apiClient.delete(`/vehicle-packages/${id}`);
   }
 };
 
+export default vehiclePackageService;
