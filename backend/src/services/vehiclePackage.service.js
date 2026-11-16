@@ -1,6 +1,7 @@
 import { VehiclePackageRepository } from '../repositories/vehiclePackage.repository.js';
 import { ApiError } from '../utils/ApiError.js';
-import { getClient } from '../config/database.js';
+import { getClient, isDatabaseAvailable } from '../config/database.js';
+import { mockStore } from '../database/mockStore.js';
 
 export class VehiclePackageService {
   /**
@@ -33,6 +34,19 @@ export class VehiclePackageService {
     const existingName = await VehiclePackageRepository.findByName(name);
     if (existingName) {
       throw ApiError.conflict(`Vehicle package with name '${name.trim()}' already exists`);
+    }
+
+    if (!isDatabaseAvailable()) {
+      for (const item of items) {
+        const prod = mockStore.getProductById(item.productId);
+        if (!prod) {
+          throw ApiError.notFound(`Product with ID '${item.productId}' not found in catalogue`);
+        }
+        if (!prod.is_active) {
+          throw ApiError.badRequest(`Product '${prod.name}' is inactive and cannot be added to a package`);
+        }
+      }
+      return mockStore.createVehiclePackage({ name, description, isActive, items });
     }
 
     const client = await getClient();
@@ -90,6 +104,21 @@ export class VehiclePackageService {
       if (duplicate) {
         throw ApiError.conflict(`Vehicle package with name '${name.trim()}' already exists`);
       }
+    }
+
+    if (!isDatabaseAvailable()) {
+      if (items && items.length > 0) {
+        for (const item of items) {
+          const prod = mockStore.getProductById(item.productId);
+          if (!prod) {
+            throw ApiError.notFound(`Product with ID '${item.productId}' not found in catalogue`);
+          }
+          if (!prod.is_active) {
+            throw ApiError.badRequest(`Product '${prod.name}' is inactive and cannot be in a package`);
+          }
+        }
+      }
+      return mockStore.updateVehiclePackage(id, { name, description, isActive, items });
     }
 
     const client = await getClient();

@@ -1,10 +1,19 @@
-import { query } from '../config/database.js';
+import { query, isDatabaseAvailable } from '../config/database.js';
+import { mockStore } from '../database/mockStore.js';
 
 export class VehiclePackageRepository {
   /**
    * Find package by exact name (case-insensitive) for duplicate name validation
    */
   static async findByName(name, excludeId = null) {
+    if (!isDatabaseAvailable()) {
+      const lower = name.trim().toLowerCase();
+      const pkg = mockStore.vehiclePackages.find(
+        (p) => p.name.toLowerCase() === lower && (!excludeId || p.id !== excludeId)
+      );
+      return pkg || null;
+    }
+
     let sql = 'SELECT id, name FROM vehicle_packages WHERE LOWER(name) = LOWER($1)';
     const params = [name.trim()];
     if (excludeId) {
@@ -19,6 +28,10 @@ export class VehiclePackageRepository {
    * Find single package by ID with fully hydrated components and live inventory balances
    */
   static async findById(id, client = null) {
+    if (!isDatabaseAvailable()) {
+      return mockStore.getVehiclePackageById(id);
+    }
+
     const runner = client ? client.query.bind(client) : query;
 
     const packageSql = `
@@ -84,6 +97,10 @@ export class VehiclePackageRepository {
    * Find paginated list of vehicle packages with search and status filters
    */
   static async findAll({ page = 1, limit = 20, search, isActive }) {
+    if (!isDatabaseAvailable()) {
+      return mockStore.getVehiclePackages({ page, limit, search, isActive });
+    }
+
     const offset = (page - 1) * limit;
     const conditions = [];
     const params = [];
@@ -168,6 +185,10 @@ export class VehiclePackageRepository {
    * Create a new vehicle package with its components in a transaction
    */
   static async create(client, { name, description, isActive = true, items }) {
+    if (!isDatabaseAvailable()) {
+      return mockStore.createVehiclePackage({ name, description, isActive, items });
+    }
+
     const pkgSql = `
       INSERT INTO vehicle_packages (name, description, is_active)
       VALUES ($1, $2, $3)
@@ -205,6 +226,10 @@ export class VehiclePackageRepository {
    * Update a vehicle package and its components
    */
   static async update(client, id, { name, description, isActive, items }) {
+    if (!isDatabaseAvailable()) {
+      return mockStore.updateVehiclePackage(id, { name, description, isActive, items });
+    }
+
     const updates = [];
     const params = [id];
     let pIdx = 2;
@@ -267,6 +292,10 @@ export class VehiclePackageRepository {
    * Delete a vehicle package (cascades to items)
    */
   static async delete(id, client = null) {
+    if (!isDatabaseAvailable()) {
+      return mockStore.deleteVehiclePackage(id);
+    }
+
     const runner = client ? client.query.bind(client) : query;
     const sql = 'DELETE FROM vehicle_packages WHERE id = $1 RETURNING id, name;';
     const res = await runner(sql, [id]);

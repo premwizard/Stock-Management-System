@@ -1,10 +1,15 @@
-import { query } from '../config/database.js';
+import { query, isDatabaseAvailable } from '../config/database.js';
+import { mockStore } from '../database/mockStore.js';
 
 export class DashboardRepository {
   /**
    * Get high-level KPI counts and summary statistics in a single aggregated SQL query
    */
   static async getSummary() {
+    if (!isDatabaseAvailable()) {
+      return mockStore.getDashboardSummary();
+    }
+
     const sql = `
       SELECT 
         (SELECT COUNT(*)::int FROM products WHERE is_active = true) AS total_products,
@@ -30,6 +35,10 @@ export class DashboardRepository {
    * Get category-wise inventory distribution for charts
    */
   static async getCategoryDistribution() {
+    if (!isDatabaseAvailable()) {
+      return mockStore.getDashboardCategoryDistribution();
+    }
+
     const sql = `
       WITH category_stats AS (
         SELECT 
@@ -73,6 +82,10 @@ export class DashboardRepository {
    * Get latest stock movements with product details
    */
   static async getRecentMovements(limit = 10) {
+    if (!isDatabaseAvailable()) {
+      return mockStore.getDashboardRecentMovements(limit);
+    }
+
     const sql = `
       SELECT 
         sm.id,
@@ -102,6 +115,9 @@ export class DashboardRepository {
    * Get products with critically low or zero stock
    */
   static async getLowStockProducts(limit = 10) {
+    if (!isDatabaseAvailable()) {
+      return mockStore.getDashboardLowStock(limit);
+    }
     const sql = `
       SELECT 
         p.id AS product_id,

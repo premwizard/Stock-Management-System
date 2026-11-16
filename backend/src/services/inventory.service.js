@@ -1,6 +1,7 @@
 import { InventoryRepository } from '../repositories/inventory.repository.js';
 import { ApiError } from '../utils/ApiError.js';
-import { getClient } from '../config/database.js';
+import { getClient, isDatabaseAvailable } from '../config/database.js';
+import { mockStore } from '../database/mockStore.js';
 
 export class InventoryService {
   /**
@@ -32,6 +33,25 @@ export class InventoryService {
   static async stockIn({ productId, quantity, reason }) {
     if (quantity <= 0) {
       throw ApiError.badRequest('Stock-in quantity must be greater than 0');
+    }
+
+    if (!isDatabaseAvailable()) {
+      const current = mockStore.getProductById(productId);
+      if (!current) {
+        throw ApiError.notFound(`Product with ID '${productId}' not found in inventory`);
+      }
+      const previousQuantity = Number(current.quantity);
+      const newQuantity = previousQuantity + Number(quantity);
+      mockStore.updateStockQuantity(productId, newQuantity);
+      mockStore.recordStockMovement({
+        productId,
+        movementType: 'IN',
+        quantity,
+        previousQuantity,
+        newQuantity,
+        reason
+      });
+      return mockStore.getInventoryByProductId(productId);
     }
 
     const client = await getClient();
@@ -78,6 +98,30 @@ export class InventoryService {
   static async stockOut({ productId, quantity, reason }) {
     if (quantity <= 0) {
       throw ApiError.badRequest('Stock-out quantity must be greater than 0');
+    }
+
+    if (!isDatabaseAvailable()) {
+      const current = mockStore.getProductById(productId);
+      if (!current) {
+        throw ApiError.notFound(`Product with ID '${productId}' not found in inventory`);
+      }
+      const previousQuantity = Number(current.quantity);
+      if (previousQuantity < quantity) {
+        throw ApiError.badRequest(
+          `Insufficient stock. Available units: ${previousQuantity}, requested reduction: ${quantity}`
+        );
+      }
+      const newQuantity = previousQuantity - Number(quantity);
+      mockStore.updateStockQuantity(productId, newQuantity);
+      mockStore.recordStockMovement({
+        productId,
+        movementType: 'OUT',
+        quantity,
+        previousQuantity,
+        newQuantity,
+        reason
+      });
+      return mockStore.getInventoryByProductId(productId);
     }
 
     const client = await getClient();
@@ -130,6 +174,27 @@ export class InventoryService {
   static async adjustStock({ productId, newQuantity, reason }) {
     if (newQuantity < 0) {
       throw ApiError.badRequest('Target stock quantity cannot be negative');
+    }
+
+    if (!isDatabaseAvailable()) {
+      const current = mockStore.getProductById(productId);
+      if (!current) {
+        throw ApiError.notFound(`Product with ID '${productId}' not found in inventory`);
+      }
+      const previousQuantity = Number(current.quantity);
+      const delta = Math.abs(newQuantity - previousQuantity);
+      mockStore.updateStockQuantity(productId, newQuantity);
+      if (delta > 0) {
+        mockStore.recordStockMovement({
+          productId,
+          movementType: 'ADJUSTMENT',
+          quantity: delta,
+          previousQuantity,
+          newQuantity,
+          reason
+        });
+      }
+      return mockStore.getInventoryByProductId(productId);
     }
 
     const client = await getClient();

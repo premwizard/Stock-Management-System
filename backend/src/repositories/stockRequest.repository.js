@@ -1,10 +1,17 @@
-import { query } from '../config/database.js';
+import { query, isDatabaseAvailable } from '../config/database.js';
+import { mockStore } from '../database/mockStore.js';
 
 export class StockRequestRepository {
   /**
    * Generate unique human-readable request number (e.g. REQ-20261115-4819)
    */
   static async generateRequestNumber(client = null) {
+    if (!isDatabaseAvailable()) {
+      const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+      const randomSuffix = Math.floor(1000 + Math.random() * 9000);
+      return `REQ-${dateStr}-${randomSuffix}`;
+    }
+
     const executor = client || { query };
     const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, '');
     let unique = false;
@@ -29,6 +36,10 @@ export class StockRequestRepository {
    * Create a draft stock request with line items within a client transaction
    */
   static async create(client, { requestNumber, notes, items }) {
+    if (!isDatabaseAvailable()) {
+      return mockStore.createStockRequest({ notes, items });
+    }
+
     const totalItems = items.length;
     const totalQuantity = items.reduce((acc, curr) => acc + Number(curr.requestedQuantity), 0);
 
@@ -81,6 +92,10 @@ export class StockRequestRepository {
     status = 'all',
     search
   }) {
+    if (!isDatabaseAvailable()) {
+      return mockStore.getStockRequests({ page, limit, status, search });
+    }
+
     const offset = (page - 1) * limit;
     const conditions = [];
     const values = [];
@@ -149,6 +164,10 @@ export class StockRequestRepository {
    * Find request by ID with joined item details, catalog attributes, and current inventory
    */
   static async findById(id, client = null) {
+    if (!isDatabaseAvailable()) {
+      return mockStore.getStockRequestById(id);
+    }
+
     const executor = client || { query };
 
     const requestSql = `
@@ -240,6 +259,10 @@ export class StockRequestRepository {
    * Update items in an existing draft request
    */
   static async updateDraft(client, id, { notes, items }) {
+    if (!isDatabaseAvailable()) {
+      return mockStore.updateStockRequest(id, { notes, items });
+    }
+
     const totalItems = items.length;
     const totalQuantity = items.reduce((acc, curr) => acc + Number(curr.requestedQuantity), 0);
 
@@ -300,6 +323,10 @@ export class StockRequestRepository {
    * Transition request status to CONFIRMED
    */
   static async setConfirmed(client, id) {
+    if (!isDatabaseAvailable()) {
+      return mockStore.confirmStockRequest(id);
+    }
+
     const res = await client.query(
       `
       UPDATE stock_requests
@@ -319,6 +346,10 @@ export class StockRequestRepository {
    * Transition request status to CANCELLED
    */
   static async setCancelled(client, id) {
+    if (!isDatabaseAvailable()) {
+      return mockStore.cancelStockRequest(id);
+    }
+
     const res = await client.query(
       `
       UPDATE stock_requests

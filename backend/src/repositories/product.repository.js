@@ -1,4 +1,5 @@
-import { query } from '../config/database.js';
+import { query, isDatabaseAvailable } from '../config/database.js';
+import { mockStore } from '../database/mockStore.js';
 
 export class ProductRepository {
   /**
@@ -14,6 +15,10 @@ export class ProductRepository {
     sort = 'created_at',
     order = 'desc'
   }) {
+    if (!isDatabaseAvailable()) {
+      return mockStore.getAllProducts({ page, limit, category, brand, status, search, sort, order });
+    }
+
     const offset = (page - 1) * limit;
     const conditions = ['p.is_active = true'];
     const values = [];
@@ -58,19 +63,19 @@ export class ProductRepository {
 
     const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
 
-    // Safe Sort Mapping
+    // Sort column mapping
     const sortFieldMap = {
       name: 'p.name',
       sku: 'p.sku',
-      brand: 'p.brand',
-      quantity: 'i.quantity',
       created_at: 'p.created_at',
-      updated_at: 'p.updated_at'
+      brand: 'p.brand',
+      quantity: 'i.quantity'
     };
-    const sortColumn = sortFieldMap[sort] || 'p.created_at';
-    const sortDirection = order.toUpperCase() === 'ASC' ? 'ASC' : 'DESC';
 
-    // 1. Total Count Query
+    const sortField = sortFieldMap[sort] || 'p.created_at';
+    const sortOrder = order.toLowerCase() === 'asc' ? 'ASC' : 'DESC';
+
+    // 1. Total matching count
     const countSql = `
       SELECT COUNT(*)::int AS total
       FROM products p
@@ -81,12 +86,7 @@ export class ProductRepository {
     const countRes = await query(countSql, values);
     const totalItems = countRes.rows[0]?.total || 0;
 
-    // 2. Data Retrieval Query
-    values.push(limit);
-    const limitIdx = values.length;
-    values.push(offset);
-    const offsetIdx = values.length;
-
+    // 2. Paginated data slice
     const dataSql = `
       SELECT 
         p.id,
@@ -101,6 +101,7 @@ export class ProductRepository {
         p.created_at,
         p.updated_at,
         c.id AS category_id,
+        c.name AS category,
         c.name AS category_name,
         COALESCE(i.quantity, 0) AS quantity,
         CASE
@@ -112,10 +113,11 @@ export class ProductRepository {
       INNER JOIN categories c ON p.category_id = c.id
       INNER JOIN inventory i ON p.id = i.product_id
       ${whereClause}
-      ORDER BY ${sortColumn} ${sortDirection}
-      LIMIT $${limitIdx} OFFSET $${offsetIdx};
+      ORDER BY ${sortField} ${sortOrder}
+      LIMIT $${values.length + 1} OFFSET $${values.length + 2};
     `;
 
+    values.push(limit, offset);
     const dataRes = await query(dataSql, values);
     const totalPages = Math.ceil(totalItems / limit) || 1;
 
@@ -134,6 +136,10 @@ export class ProductRepository {
    * Find product by ID
    */
   static async findById(id) {
+    if (!isDatabaseAvailable()) {
+      return mockStore.getProductById(id);
+    }
+
     const sql = `
       SELECT 
         p.id,
@@ -168,6 +174,10 @@ export class ProductRepository {
    * Find product by SKU
    */
   static async findBySku(sku) {
+    if (!isDatabaseAvailable()) {
+      return mockStore.getProductBySku(sku);
+    }
+
     const res = await query('SELECT id, name, sku FROM products WHERE LOWER(sku) = LOWER($1)', [sku]);
     return res.rows[0] || null;
   }
@@ -186,6 +196,20 @@ export class ProductRepository {
     minimumStock,
     initialStock = 0
   }) {
+    if (!isDatabaseAvailable()) {
+      return mockStore.createProduct({
+        name,
+        sku,
+        categoryId,
+        brand,
+        description,
+        unit,
+        imageUrl,
+        minimumStock,
+        initialStock
+      });
+    }
+
     // 1. Insert product
     const prodRes = await client.query(
       `
@@ -245,6 +269,19 @@ export class ProductRepository {
     minimumStock,
     isActive
   }) {
+    if (!isDatabaseAvailable()) {
+      return mockStore.updateProduct(id, {
+        name,
+        categoryId,
+        brand,
+        description,
+        unit,
+        imageUrl,
+        minimumStock,
+        isActive
+      });
+    }
+
     const res = await query(
       `
       UPDATE products
@@ -271,6 +308,10 @@ export class ProductRepository {
    * Delete product and its associated records cleanly in a transaction
    */
   static async delete(id) {
+    if (!isDatabaseAvailable()) {
+      return mockStore.deleteProduct(id);
+    }
+
     const { getClient } = await import('../config/database.js');
     const client = await getClient();
     try {
@@ -295,6 +336,15 @@ export class ProductRepository {
    * Find products by category ID
    */
   static async findByCategoryId(categoryId) {
+    if (!isDatabaseAvailable()) {
+      return mockStore.products
+        .filter((p) => p.category_id === categoryId && p.is_active)
+        .map((p) => ({
+          ...p,
+          quantity: mockStore.inventory.get(p.id)?.quantity || 0
+        }));
+    }
+
     const sql = `
       SELECT 
         p.id, p.name, p.sku, p.brand, p.unit, p.minimum_stock,

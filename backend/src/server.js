@@ -27,7 +27,7 @@ const initializeDatabase = async () => {
     dbInitialized = true;
     logger.info('Database schema and initial data verified successfully.');
   } catch (err) {
-    logger.error(
+    logger.warn(
       {
         message: err.message,
         code: err.code,
@@ -35,9 +35,7 @@ const initializeDatabase = async () => {
         port: env.DB_PORT,
         hasDatabaseUrl: Boolean(env.DATABASE_URL)
       },
-      'PostgreSQL connection could not be established on startup. ' +
-        'If running on Render, make sure to add DATABASE_URL (from your Render PostgreSQL or Supabase/Neon instance) ' +
-        'in the Environment Variables tab of your Render Web Service.'
+      'PostgreSQL not connected on startup. Seamlessly operating in in-memory mock store mode with 140+ automotive catalogue products, vehicle packages, and stock request support.'
     );
   }
 };

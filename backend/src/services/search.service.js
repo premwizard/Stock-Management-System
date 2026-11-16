@@ -23,7 +23,10 @@ export class SearchService {
         totalStockUnits: result.totalStockUnits,
         products: result.products
       },
-      meta: result.meta
+      meta: {
+        ...result.meta,
+        executionTimeMs: result.executionTimeMs
+      }
     };
   }
 }

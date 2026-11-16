@@ -1,7 +1,8 @@
 import { StockRequestRepository } from '../repositories/stockRequest.repository.js';
 import { InventoryRepository } from '../repositories/inventory.repository.js';
 import { ApiError } from '../utils/ApiError.js';
-import { getClient, query } from '../config/database.js';
+import { getClient, query, isDatabaseAvailable } from '../config/database.js';
+import { mockStore } from '../database/mockStore.js';
 
 export class StockRequestService {
   /**
@@ -10,6 +11,10 @@ export class StockRequestService {
   static async verifyStock({ items }) {
     if (!items || items.length === 0) {
       throw ApiError.badRequest('At least one item is required for stock verification');
+    }
+
+    if (!isDatabaseAvailable()) {
+      return mockStore.verifyStockAvailability(items);
     }
 
     const productIds = items.map((i) => i.productId);
@@ -84,6 +89,10 @@ export class StockRequestService {
       throw ApiError.badRequest('Stock request must contain at least one product item');
     }
 
+    if (!isDatabaseAvailable()) {
+      return mockStore.createStockRequest({ notes, items });
+    }
+
     const client = await getClient();
     try {
       await client.query('BEGIN');
@@ -156,6 +165,17 @@ export class StockRequestService {
       throw ApiError.badRequest('Stock request must contain at least one product item');
     }
 
+    if (!isDatabaseAvailable()) {
+      const existing = mockStore.getStockRequestById(id);
+      if (!existing) {
+        throw ApiError.notFound(`Stock request with ID '${id}' not found`);
+      }
+      if (existing.status !== 'DRAFT') {
+        throw ApiError.badRequest(`Only DRAFT stock requests can be edited. Current status: ${existing.status}`);
+      }
+      return mockStore.updateStockRequest(id, { notes, items });
+    }
+
     const client = await getClient();
     try {
       await client.query('BEGIN');
@@ -211,6 +231,30 @@ export class StockRequestService {
    * 4. Deducts stock, writes OUT movements, records snapshots, updates status to CONFIRMED
    */
   static async confirmRequest(id) {
+    if (!isDatabaseAvailable()) {
+      const existing = mockStore.getStockRequestById(id);
+      if (!existing) {
+        throw ApiError.notFound(`Stock request with ID '${id}' not found`);
+      }
+      if (existing.status === 'CONFIRMED') {
+        throw ApiError.conflict(`Stock request '${existing.request_number}' is already confirmed`);
+      }
+      if (existing.status === 'CANCELLED') {
+        throw ApiError.badRequest(`Cannot confirm cancelled stock request '${existing.request_number}'`);
+      }
+      if (existing.status !== 'DRAFT') {
+        throw ApiError.badRequest(`Stock request cannot be confirmed from status '${existing.status}'`);
+      }
+      try {
+        return mockStore.confirmStockRequest(id);
+      } catch (err) {
+        if (err.errors) {
+          throw ApiError.badRequest(err.message, err.errors);
+        }
+        throw err;
+      }
+    }
+
     const client = await getClient();
     try {
       await client.query('BEGIN');
@@ -332,6 +376,20 @@ export class StockRequestService {
    * Cancel an unconfirmed DRAFT stock request
    */
   static async cancelRequest(id) {
+    if (!isDatabaseAvailable()) {
+      const existing = mockStore.getStockRequestById(id);
+      if (!existing) {
+        throw ApiError.notFound(`Stock request with ID '${id}' not found`);
+      }
+      if (existing.status === 'CONFIRMED') {
+        throw ApiError.badRequest('Cannot cancel an already confirmed stock request. Inventory has already been deducted.');
+      }
+      if (existing.status === 'CANCELLED') {
+        throw ApiError.badRequest('Stock request is already cancelled.');
+      }
+      return mockStore.cancelStockRequest(id);
+    }
+
     const client = await getClient();
     try {
       await client.query('BEGIN');

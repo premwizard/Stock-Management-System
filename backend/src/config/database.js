@@ -4,6 +4,17 @@ import { logger } from '../utils/logger.js';
 
 const { Pool } = pg;
 
+let dbAvailable = false;
+
+export const isDatabaseAvailable = () => {
+  if (process.env.USE_MOCK_DATA === 'true') return false;
+  return dbAvailable;
+};
+
+export const setDatabaseAvailable = (status) => {
+  dbAvailable = Boolean(status);
+};
+
 // Detect whether SSL is required (cloud databases, production, or explicitly enabled)
 const isLocalhost =
   (!env.DATABASE_URL && (env.DB_HOST === 'localhost' || env.DB_HOST === '127.0.0.1')) ||
@@ -60,11 +71,18 @@ export const getClient = () => pool.connect();
  * @returns {Promise<{ status: string, latencyMs: number }>}
  */
 export const checkDatabaseConnection = async () => {
-  const start = Date.now();
-  const res = await pool.query('SELECT 1 AS health_check');
-  const latencyMs = Date.now() - start;
-  return {
-    status: res.rows[0]?.health_check === 1 ? 'connected' : 'degraded',
-    latencyMs
-  };
+  try {
+    const start = Date.now();
+    const res = await pool.query('SELECT 1 AS health_check');
+    const latencyMs = Date.now() - start;
+    const isConnected = res.rows[0]?.health_check === 1;
+    setDatabaseAvailable(isConnected);
+    return {
+      status: isConnected ? 'connected' : 'degraded',
+      latencyMs
+    };
+  } catch (err) {
+    setDatabaseAvailable(false);
+    throw err;
+  }
 };

@@ -1,4 +1,5 @@
-import { query } from '../config/database.js';
+import { query, isDatabaseAvailable } from '../config/database.js';
+import { mockStore } from '../database/mockStore.js';
 
 export class InventoryRepository {
   /**
@@ -13,6 +14,10 @@ export class InventoryRepository {
     sort = 'updated_at',
     order = 'desc'
   }) {
+    if (!isDatabaseAvailable()) {
+      return mockStore.getInventoryList({ page, limit, category, status, search, sort, order });
+    }
+
     const offset = (page - 1) * limit;
     const conditions = ['p.is_active = true'];
     const values = [];
@@ -123,6 +128,10 @@ export class InventoryRepository {
    * Find inventory by product ID, with optional row-level lock (FOR UPDATE)
    */
   static async findByProductId(productId, client = null, forUpdate = false) {
+    if (!isDatabaseAvailable()) {
+      return mockStore.getInventoryByProductId(productId);
+    }
+
     const lockClause = forUpdate ? 'FOR UPDATE' : '';
     const sql = `
       SELECT 
@@ -159,6 +168,10 @@ export class InventoryRepository {
    * Update stock quantity within an active transaction
    */
   static async updateQuantity(client, productId, newQuantity) {
+    if (!isDatabaseAvailable()) {
+      return mockStore.updateStockQuantity(productId, newQuantity);
+    }
+
     const res = await client.query(
       `
       UPDATE inventory
@@ -185,6 +198,18 @@ export class InventoryRepository {
     reason,
     stockRequestId = null
   }) {
+    if (!isDatabaseAvailable()) {
+      return mockStore.recordStockMovement({
+        productId,
+        movementType,
+        quantity,
+        previousQuantity,
+        newQuantity,
+        reason,
+        stockRequestId
+      });
+    }
+
     const res = await client.query(
       `
       INSERT INTO stock_movements (
@@ -210,6 +235,10 @@ export class InventoryRepository {
     startDate,
     endDate
   }) {
+    if (!isDatabaseAvailable()) {
+      return mockStore.getMovements({ page, limit, productId, stockRequestId, movementType, startDate, endDate });
+    }
+
     const offset = (page - 1) * limit;
     const conditions = [];
     const values = [];
@@ -294,6 +323,10 @@ export class InventoryRepository {
    * Find recent movements for a specific product
    */
   static async findMovementsByProductId(productId, limit = 10) {
+    if (!isDatabaseAvailable()) {
+      return mockStore.getMovements({ productId, limit }).movements;
+    }
+
     const sql = `
       SELECT 
         sm.id,

@@ -1,10 +1,15 @@
-import { query } from '../config/database.js';
+import { query, isDatabaseAvailable } from '../config/database.js';
+import { mockStore } from '../database/mockStore.js';
 
 export class CategoryRepository {
   /**
    * Find all categories, optionally including product count and total stock units
    */
   static async findAll(withStats = false) {
+    if (!isDatabaseAvailable()) {
+      return mockStore.getAllCategories(withStats);
+    }
+
     if (withStats) {
       const sql = `
         SELECT 
@@ -35,6 +40,10 @@ export class CategoryRepository {
    * Find category by ID
    */
   static async findById(id) {
+    if (!isDatabaseAvailable()) {
+      return mockStore.getCategoryById(id);
+    }
+
     const res = await query(
       'SELECT id, name, description, created_at, updated_at FROM categories WHERE id = $1',
       [id]
@@ -46,6 +55,10 @@ export class CategoryRepository {
    * Find category by name
    */
   static async findByName(name) {
+    if (!isDatabaseAvailable()) {
+      return mockStore.getCategoryByName(name);
+    }
+
     const res = await query(
       'SELECT id, name, description, created_at, updated_at FROM categories WHERE LOWER(name) = LOWER($1)',
       [name]
@@ -57,6 +70,10 @@ export class CategoryRepository {
    * Create a new category
    */
   static async create({ name, description }) {
+    if (!isDatabaseAvailable()) {
+      return mockStore.createCategory({ name, description });
+    }
+
     const res = await query(
       `
       INSERT INTO categories (name, description)
@@ -72,6 +89,10 @@ export class CategoryRepository {
    * Update category
    */
   static async update(id, { name, description }) {
+    if (!isDatabaseAvailable()) {
+      return mockStore.updateCategory(id, { name, description });
+    }
+
     const res = await query(
       `
       UPDATE categories
@@ -90,6 +111,10 @@ export class CategoryRepository {
    * Count how many products are linked to a category
    */
   static async countProductsByCategoryId(id) {
+    if (!isDatabaseAvailable()) {
+      return mockStore.products.filter((p) => p.category_id === id && p.is_active).length;
+    }
+
     const res = await query(
       'SELECT COUNT(*)::int AS product_count FROM products WHERE category_id = $1',
       [id]
@@ -101,6 +126,10 @@ export class CategoryRepository {
    * Delete category
    */
   static async delete(id) {
+    if (!isDatabaseAvailable()) {
+      return mockStore.deleteCategory(id);
+    }
+
     const res = await query(
       'DELETE FROM categories WHERE id = $1 RETURNING id, name',
       [id]
@@ -108,4 +137,3 @@ export class CategoryRepository {
     return res.rows[0] || null;
   }
 }
-
