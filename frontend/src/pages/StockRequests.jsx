@@ -236,7 +236,7 @@ export default function StockRequests() {
   };
 
   return (
-    <div className="space-y-6 animate-fadeIn pb-24">
+    <div className={`space-y-6 animate-fadeIn ${totalItems > 0 && activeTab === 'create' ? 'pb-40' : 'pb-24'}`}>
       {/* Checkout Workflow Stepper */}
       {activeTab === 'create' && <CheckoutSteps currentStep={1} />}
 
@@ -317,30 +317,34 @@ export default function StockRequests() {
           {/* Left Column: Search & Selection (8 cols) */}
           <div className="lg:col-span-7 xl:col-span-8 space-y-5">
             {/* Option A / Option B Switcher Banner */}
-            <div className="p-1.5 bg-slate-100/80 rounded-2xl border border-slate-200/70 flex items-center gap-2">
+            <div className="p-1.5 bg-slate-100/80 rounded-2xl border border-slate-200/70 flex items-center gap-1.5 sm:gap-2">
               <button
                 onClick={() => setSelectionMode('individual')}
-                className={`flex-1 py-2.5 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer ${
+                className={`flex-1 py-2.5 px-2 sm:px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 sm:gap-2 transition-all cursor-pointer min-h-[42px] ${
                   selectionMode === 'individual'
                     ? 'bg-white text-indigo-700 shadow-xs border border-indigo-100 font-extrabold'
-                    : 'text-slate-600 hover:text-slate-900'
+                    : 'text-slate-600 hover:text-slate-900 active:bg-slate-200'
                 }`}
               >
-                <Package className="w-4 h-4" />
-                <span>Option A — Individual Parts</span>
+                <Package className="w-4 h-4 flex-shrink-0" />
+                <span className="truncate">
+                  <span className="sm:hidden">Individual Parts</span>
+                  <span className="hidden sm:inline">Option A — Individual Parts</span>
+                </span>
               </button>
               <button
                 onClick={() => setSelectionMode('packages')}
-                className={`flex-1 py-2.5 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer ${
+                className={`flex-1 py-2.5 px-2 sm:px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 sm:gap-2 transition-all cursor-pointer min-h-[42px] ${
                   selectionMode === 'packages'
                     ? 'bg-white text-indigo-700 shadow-xs border border-indigo-100 font-extrabold'
-                    : 'text-slate-600 hover:text-slate-900'
+                    : 'text-slate-600 hover:text-slate-900 active:bg-slate-200'
                 }`}
               >
-                <Boxes className="w-4 h-4 text-indigo-600" />
-                <span className="flex items-center gap-1.5">
-                  Option B — Vehicle Packages
-                  <span className="text-[9px] bg-indigo-100 text-indigo-800 px-1.5 py-0.2 rounded-full uppercase tracking-wider">
+                <Boxes className="w-4 h-4 text-indigo-600 flex-shrink-0" />
+                <span className="flex items-center gap-1 truncate">
+                  <span className="sm:hidden">Vehicle Bundles</span>
+                  <span className="hidden sm:inline">Option B — Vehicle Packages</span>
+                  <span className="text-[9px] bg-indigo-100 text-indigo-800 px-1.5 py-0.2 rounded-full uppercase tracking-wider font-extrabold flex-shrink-0">
                     Bundles
                   </span>
                 </span>
@@ -525,7 +529,7 @@ export default function StockRequests() {
                                 Out of Stock
                               </span>
                             ) : cartItem ? (
-                              <div className="flex items-center gap-1.5 bg-white p-1 rounded-xl border border-indigo-200 shadow-2xs">
+                              <div className="flex items-center gap-1 bg-white p-1 rounded-xl border border-indigo-200 shadow-2xs">
                                 <button
                                   onClick={() => {
                                     if (inCartQty <= 1) {
@@ -534,19 +538,21 @@ export default function StockRequests() {
                                       updateQuantity(p.id, inCartQty - 1);
                                     }
                                   }}
-                                  className="p-1 rounded-lg text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer"
-                                  title="Decrease"
+                                  className="p-1.5 min-h-[36px] min-w-[36px] flex items-center justify-center rounded-lg text-slate-700 bg-slate-50 hover:bg-slate-100 border border-slate-200/60 active:scale-95 transition-all cursor-pointer"
+                                  title="Decrease quantity"
+                                  aria-label="Decrease quantity"
                                 >
                                   <Minus className="w-3.5 h-3.5" />
                                 </button>
-                                <span className="px-2 font-mono font-black text-xs text-indigo-700 min-w-[24px] text-center">
+                                <span className="px-2 font-mono font-black text-xs text-indigo-700 min-w-[28px] text-center">
                                   {inCartQty}
                                 </span>
                                 <button
                                   onClick={() => updateQuantity(p.id, inCartQty + 1)}
                                   disabled={remainingAvailable <= 0}
-                                  className="p-1 rounded-lg text-slate-600 hover:bg-slate-100 disabled:opacity-30 disabled:cursor-not-allowed transition-colors cursor-pointer"
-                                  title="Increase"
+                                  className="p-1.5 min-h-[36px] min-w-[36px] flex items-center justify-center rounded-lg text-slate-700 bg-slate-50 hover:bg-slate-100 border border-slate-200/60 disabled:opacity-30 disabled:pointer-events-none active:scale-95 transition-all cursor-pointer"
+                                  title="Increase quantity"
+                                  aria-label="Increase quantity"
                                 >
                                   <Plus className="w-3.5 h-3.5" />
                                 </button>
@@ -557,6 +563,7 @@ export default function StockRequests() {
                                 size="sm"
                                 icon={Plus}
                                 onClick={() => addToCart(p, 1)}
+                                className="min-h-[38px] px-3 font-bold"
                               >
                                 Add to Checkout
                               </Button>
@@ -715,18 +722,20 @@ export default function StockRequests() {
                                 <button
                                   onClick={() => setPackageMultiplier(pkg.id, mult - 1)}
                                   disabled={mult <= 1}
-                                  className="p-1 rounded text-slate-600 hover:bg-white disabled:opacity-30 cursor-pointer"
+                                  className="p-2 min-h-[36px] min-w-[36px] flex items-center justify-center rounded-lg text-slate-600 hover:bg-white active:scale-95 disabled:opacity-30 disabled:pointer-events-none cursor-pointer"
+                                  aria-label="Decrease multiplier"
                                 >
-                                  <Minus className="w-3 h-3" />
+                                  <Minus className="w-3.5 h-3.5" />
                                 </button>
                                 <span className="w-10 text-center font-mono font-black text-xs text-indigo-700">
                                   × {mult}
                                 </span>
                                 <button
                                   onClick={() => setPackageMultiplier(pkg.id, mult + 1)}
-                                  className="p-1 rounded text-slate-600 hover:bg-white cursor-pointer"
+                                  className="p-2 min-h-[36px] min-w-[36px] flex items-center justify-center rounded-lg text-slate-600 hover:bg-white active:scale-95 cursor-pointer"
+                                  aria-label="Increase multiplier"
                                 >
-                                  <Plus className="w-3 h-3" />
+                                  <Plus className="w-3.5 h-3.5" />
                                 </button>
                               </div>
                               <span className="text-[11px] text-slate-400 hidden sm:inline">
@@ -738,7 +747,7 @@ export default function StockRequests() {
                               variant="primary"
                               size="md"
                               icon={ShoppingCart}
-                              className="w-full sm:w-auto justify-center"
+                              className="w-full sm:w-auto justify-center min-h-[44px] font-bold"
                               onClick={() => handleAddPackage(pkg)}
                             >
                               Add Complete Package to Checkout
@@ -852,22 +861,24 @@ export default function StockRequests() {
                           Avail: <strong className="text-slate-900">{item.availableQuantity}</strong> {item.unit}
                         </span>
 
-                        <div className="flex items-center gap-1.5 bg-white px-2 py-1 rounded-lg border border-slate-200 shadow-2xs">
+                        <div className="flex items-center gap-1.5 bg-white p-1 rounded-lg border border-slate-200 shadow-2xs">
                           <button
                             onClick={() => updateQuantity(item.productId, item.requestedQuantity - 1)}
                             disabled={item.requestedQuantity <= 1}
-                            className="p-0.5 rounded text-slate-600 hover:bg-slate-100 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+                            className="p-1 min-h-[30px] min-w-[30px] flex items-center justify-center rounded text-slate-600 hover:bg-slate-100 active:scale-95 disabled:opacity-30 disabled:pointer-events-none cursor-pointer"
+                            aria-label="Decrease quantity"
                           >
-                            <Minus className="w-3 h-3" />
+                            <Minus className="w-3.5 h-3.5" />
                           </button>
                           <span className="w-8 text-center font-mono font-bold text-xs text-slate-900">
                             {item.requestedQuantity}
                           </span>
                           <button
                             onClick={() => updateQuantity(item.productId, item.requestedQuantity + 1)}
-                            className="p-0.5 rounded text-slate-600 hover:bg-slate-100 cursor-pointer"
+                            className="p-1 min-h-[30px] min-w-[30px] flex items-center justify-center rounded text-slate-600 hover:bg-slate-100 active:scale-95 cursor-pointer"
+                            aria-label="Increase quantity"
                           >
-                            <Plus className="w-3 h-3" />
+                            <Plus className="w-3.5 h-3.5" />
                           </button>
                         </div>
                       </div>
@@ -906,24 +917,25 @@ export default function StockRequests() {
         </div>
       )}
 
-      {/* Floating Bottom Drawer on Mobile when items in cart */}
+      {/* Floating Bottom Action Bar on Mobile when items in cart */}
       {activeTab === 'create' && totalItems > 0 && (
-        <div className="lg:hidden fixed bottom-16 left-0 right-0 p-3 bg-white/95 backdrop-blur-md border-t border-slate-200 shadow-xl z-20 flex items-center justify-between gap-3 animate-slideUp">
-          <div>
-            <span className="text-xs font-bold text-slate-900 block">
-              {totalItems} products selected
+        <div className="lg:hidden fixed bottom-[calc(3.75rem+env(safe-area-inset-bottom,0px))] left-0 right-0 px-4 py-2.5 bg-slate-900/95 backdrop-blur-md text-white border-t border-slate-800 shadow-2xl z-35 flex items-center justify-between gap-3 animate-slideUp">
+          <div className="min-w-0">
+            <span className="text-xs font-bold text-white block truncate">
+              {totalItems} {totalItems === 1 ? 'product' : 'products'} staged
             </span>
-            <span className="text-[10px] text-indigo-700 font-extrabold">
-              {formatNumber(totalUnits)} units staged
+            <span className="text-[11px] text-indigo-300 font-extrabold font-mono">
+              {formatNumber(totalUnits)} units total
             </span>
           </div>
           <Button
             variant="primary"
             size="sm"
             icon={ArrowRight}
+            className="min-h-[40px] px-4 font-bold shadow-md shadow-indigo-500/20 flex-shrink-0"
             onClick={() => navigate('/stock-requests/checkout')}
           >
-            Checkout
+            Checkout ({totalItems})
           </Button>
         </div>
       )}

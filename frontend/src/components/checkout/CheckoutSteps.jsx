@@ -2,20 +2,20 @@ import { Check, Search, FileText, ShieldCheck, CheckCircle2 } from 'lucide-react
 import { Link } from 'react-router-dom';
 
 const STEPS = [
-  { id: 1, key: 'select', label: 'Select Products', icon: Search, path: '/stock-requests' },
-  { id: 2, key: 'review', label: 'Review Summary', icon: FileText, path: '/stock-requests/checkout' },
-  { id: 3, key: 'verify', label: 'Verify Stock', icon: ShieldCheck },
-  { id: 4, key: 'confirm', label: 'Deduct Inventory', icon: CheckCircle2 }
+  { id: 1, key: 'select', label: 'Select Products', shortLabel: 'Select', icon: Search, path: '/stock-requests' },
+  { id: 2, key: 'review', label: 'Review Summary', shortLabel: 'Review', icon: FileText, path: '/stock-requests/checkout' },
+  { id: 3, key: 'verify', label: 'Verify Stock', shortLabel: 'Verify', icon: ShieldCheck },
+  { id: 4, key: 'confirm', label: 'Deduct Inventory', shortLabel: 'Confirm', icon: CheckCircle2 }
 ];
 
 export const CheckoutSteps = ({ currentStep = 1 }) => {
   return (
-    <div className="w-full bg-white rounded-2xl border border-slate-200/80 p-3 sm:p-4 shadow-2xs">
-      <div className="flex items-center justify-between max-w-3xl mx-auto relative">
-        {/* Background track line */}
-        <div className="absolute top-1/2 left-6 right-6 -translate-y-1/2 h-0.5 bg-slate-200 -z-0" />
+    <div className="w-full bg-white rounded-2xl border border-slate-200/80 p-2.5 sm:p-4 shadow-2xs">
+      <div className="flex items-start justify-between max-w-3xl mx-auto relative">
+        {/* Background track line aligned through circle centers */}
+        <div className="absolute top-4 sm:top-4.5 left-6 right-6 h-0.5 bg-slate-200 z-0" />
         <div
-          className="absolute top-1/2 left-6 -translate-y-1/2 h-0.5 bg-indigo-600 transition-all duration-300 -z-0"
+          className="absolute top-4 sm:top-4.5 left-6 h-0.5 bg-indigo-600 transition-all duration-300 z-0"
           style={{
             width: `${Math.max(0, Math.min(100, ((currentStep - 1) / (STEPS.length - 1)) * 100))}%`
           }}
@@ -41,19 +41,20 @@ export const CheckoutSteps = ({ currentStep = 1 }) => {
           );
 
           return (
-            <div key={step.id} className="flex flex-col items-center group relative z-10">
+            <div key={step.id} className="flex flex-col items-center group relative z-10 flex-1 min-w-0">
               {step.path && currentStep > step.id ? (
-                <Link to={step.path} className="flex flex-col items-center cursor-pointer">
+                <Link to={step.path} className="flex flex-col items-center cursor-pointer max-w-full">
                   {StepCircle}
-                  <span className="text-[10px] sm:text-xs font-bold text-slate-700 mt-1.5 hidden xs:block">
-                    {step.label}
+                  <span className="text-[10px] sm:text-xs font-bold text-slate-700 mt-1 text-center truncate max-w-full">
+                    <span className="sm:hidden">{step.shortLabel}</span>
+                    <span className="hidden sm:inline">{step.label}</span>
                   </span>
                 </Link>
               ) : (
-                <div className="flex flex-col items-center">
+                <div className="flex flex-col items-center max-w-full">
                   {StepCircle}
                   <span
-                    className={`text-[10px] sm:text-xs font-bold mt-1.5 hidden xs:block ${
+                    className={`text-[10px] sm:text-xs font-bold mt-1 text-center truncate max-w-full ${
                       isActive
                         ? 'text-indigo-700 font-extrabold'
                         : isDone
@@ -61,7 +62,8 @@ export const CheckoutSteps = ({ currentStep = 1 }) => {
                         : 'text-slate-400'
                     }`}
                   >
-                    {step.label}
+                    <span className="sm:hidden">{step.shortLabel}</span>
+                    <span className="hidden sm:inline">{step.label}</span>
                   </span>
                 </div>
               )}

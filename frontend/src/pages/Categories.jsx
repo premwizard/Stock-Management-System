@@ -153,18 +153,20 @@ export default function Categories() {
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-1">
+                  <div className="flex items-center gap-1.5">
                     <button
                       onClick={() => handleOpenEdit(cat)}
-                      className="p-1.5 text-slate-400 hover:text-indigo-600 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer"
+                      className="p-2 min-h-[38px] min-w-[38px] flex items-center justify-center text-slate-500 hover:text-indigo-600 active:text-indigo-700 bg-slate-50 border border-slate-200 rounded-xl hover:bg-slate-100 active:scale-95 transition-all cursor-pointer"
                       title="Edit Category"
+                      aria-label="Edit Category"
                     >
                       <Edit2 className="w-4 h-4" />
                     </button>
                     <button
                       onClick={() => handleDelete(cat.id, cat.name)}
-                      className="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg hover:bg-rose-50 transition-colors cursor-pointer"
+                      className="p-2 min-h-[38px] min-w-[38px] flex items-center justify-center text-slate-500 hover:text-rose-600 active:text-rose-700 bg-slate-50 border border-slate-200 rounded-xl hover:bg-rose-50 active:scale-95 transition-all cursor-pointer"
                       title="Delete Category"
+                      aria-label="Delete Category"
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
@@ -250,11 +252,21 @@ export default function Categories() {
             />
           </div>
 
-          <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-100">
-            <Button variant="ghost" onClick={() => setIsModalOpen(false)} disabled={isSubmitting}>
+          <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2 sm:gap-3 pt-3 border-t border-slate-100">
+            <Button
+              variant="ghost"
+              onClick={() => setIsModalOpen(false)}
+              disabled={isSubmitting}
+              className="w-full sm:w-auto min-h-[44px] justify-center"
+            >
               Cancel
             </Button>
-            <Button variant="primary" type="submit" isLoading={isSubmitting}>
+            <Button
+              variant="primary"
+              type="submit"
+              isLoading={isSubmitting}
+              className="w-full sm:w-auto min-h-[44px] justify-center font-bold"
+            >
               {editingCategory ? 'Save Changes' : 'Create Category'}
             </Button>
           </div>

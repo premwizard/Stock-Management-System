@@ -115,42 +115,42 @@ export const StockActionModal = ({
         )}
 
         {/* Action Type Tabs */}
-        <div className="grid grid-cols-3 gap-2 p-1 bg-slate-100 rounded-xl border border-slate-200/60">
+        <div className="grid grid-cols-3 gap-1.5 sm:gap-2 p-1 bg-slate-100 rounded-xl border border-slate-200/60">
           <button
             type="button"
             onClick={() => setActionType('IN')}
-            className={`py-2 text-xs font-bold rounded-lg flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+            className={`py-2 sm:py-2.5 px-1 sm:px-2 min-h-[40px] text-[11px] sm:text-xs font-bold rounded-lg flex items-center justify-center gap-1 sm:gap-1.5 transition-all cursor-pointer ${
               actionType === 'IN'
                 ? 'bg-emerald-600 text-white shadow-xs'
-                : 'text-slate-600 hover:text-slate-900'
+                : 'text-slate-600 hover:text-slate-900 active:bg-slate-200'
             }`}
           >
-            <ArrowDownLeft className="w-3.5 h-3.5" />
-            <span>Stock IN</span>
+            <ArrowDownLeft className="w-3.5 h-3.5 flex-shrink-0" />
+            <span className="truncate">Stock IN</span>
           </button>
           <button
             type="button"
             onClick={() => setActionType('OUT')}
-            className={`py-2 text-xs font-bold rounded-lg flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+            className={`py-2 sm:py-2.5 px-1 sm:px-2 min-h-[40px] text-[11px] sm:text-xs font-bold rounded-lg flex items-center justify-center gap-1 sm:gap-1.5 transition-all cursor-pointer ${
               actionType === 'OUT'
                 ? 'bg-rose-600 text-white shadow-xs'
-                : 'text-slate-600 hover:text-slate-900'
+                : 'text-slate-600 hover:text-slate-900 active:bg-slate-200'
             }`}
           >
-            <ArrowUpRight className="w-3.5 h-3.5" />
-            <span>Stock OUT</span>
+            <ArrowUpRight className="w-3.5 h-3.5 flex-shrink-0" />
+            <span className="truncate">Stock OUT</span>
           </button>
           <button
             type="button"
             onClick={() => setActionType('ADJUST')}
-            className={`py-2 text-xs font-bold rounded-lg flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+            className={`py-2 sm:py-2.5 px-1 sm:px-2 min-h-[40px] text-[11px] sm:text-xs font-bold rounded-lg flex items-center justify-center gap-1 sm:gap-1.5 transition-all cursor-pointer ${
               actionType === 'ADJUST'
                 ? 'bg-amber-600 text-white shadow-xs'
-                : 'text-slate-600 hover:text-slate-900'
+                : 'text-slate-600 hover:text-slate-900 active:bg-slate-200'
             }`}
           >
-            <RefreshCw className="w-3.5 h-3.5" />
-            <span>Audit Count</span>
+            <RefreshCw className="w-3.5 h-3.5 flex-shrink-0" />
+            <span className="truncate">Audit</span>
           </button>
         </div>
 
@@ -216,8 +216,13 @@ export const StockActionModal = ({
           />
         </div>
 
-        <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-100">
-          <Button variant="ghost" onClick={onClose} disabled={isSubmitting}>
+        <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2 sm:gap-3 pt-3 border-t border-slate-100">
+          <Button
+            variant="ghost"
+            onClick={onClose}
+            disabled={isSubmitting}
+            className="w-full sm:w-auto min-h-[44px] justify-center"
+          >
             Cancel
           </Button>
           <Button
@@ -225,6 +230,7 @@ export const StockActionModal = ({
             type="submit"
             isLoading={isSubmitting}
             disabled={isInvalidOut}
+            className="w-full sm:w-auto min-h-[44px] justify-center font-bold"
           >
             {actionType === 'IN'
               ? 'Confirm Stock IN'

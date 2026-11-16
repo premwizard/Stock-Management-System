@@ -320,7 +320,7 @@ export default function CheckoutSummary() {
   }
 
   return (
-    <div className="max-w-5xl mx-auto space-y-6 animate-fadeIn pb-16">
+    <div className="max-w-5xl mx-auto space-y-6 animate-fadeIn pb-36 sm:pb-24">
       {/* Checkout Progress Stepper */}
       <CheckoutSteps currentStep={currentStep} />
 
@@ -469,22 +469,24 @@ export default function CheckoutSummary() {
                             <button
                               onClick={() => handleQuantityChange(item.productId, item.requestedQuantity - 1)}
                               disabled={item.requestedQuantity <= 1}
-                              className="p-1 rounded text-slate-600 hover:bg-white disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                              className="p-1.5 min-h-[32px] min-w-[32px] flex items-center justify-center rounded-lg text-slate-700 bg-white hover:bg-slate-50 disabled:opacity-30 disabled:pointer-events-none active:scale-95 transition-all cursor-pointer"
+                              aria-label="Decrease quantity"
                             >
-                              <Minus className="w-3 h-3" />
+                              <Minus className="w-3.5 h-3.5" />
                             </button>
                             <input
                               type="number"
                               min="1"
                               value={item.requestedQuantity}
                               onChange={(e) => handleQuantityChange(item.productId, e.target.value)}
-                              className="w-12 text-center font-mono font-extrabold text-xs text-slate-900 bg-white rounded-lg py-0.5 border border-slate-200 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                              className="w-12 text-center font-mono font-extrabold text-xs text-slate-900 bg-white rounded-lg py-1 border border-slate-200 focus:outline-none focus:ring-1 focus:ring-indigo-500"
                             />
                             <button
                               onClick={() => handleQuantityChange(item.productId, item.requestedQuantity + 1)}
-                              className="p-1 rounded text-slate-600 hover:bg-white transition-colors"
+                              className="p-1.5 min-h-[32px] min-w-[32px] flex items-center justify-center rounded-lg text-slate-700 bg-white hover:bg-slate-50 active:scale-95 transition-all cursor-pointer"
+                              aria-label="Increase quantity"
                             >
-                              <Plus className="w-3 h-3" />
+                              <Plus className="w-3.5 h-3.5" />
                             </button>
                           </div>
                         </td>
@@ -568,7 +570,8 @@ export default function CheckoutSummary() {
 
                       <button
                         onClick={() => removeFromCart(item.productId)}
-                        className="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg"
+                        aria-label="Remove item"
+                        className="p-2 min-h-[38px] min-w-[38px] flex items-center justify-center text-slate-400 hover:text-rose-600 rounded-xl hover:bg-rose-50 active:scale-95 transition-all"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
@@ -604,22 +607,24 @@ export default function CheckoutSummary() {
                       <span className="text-xs font-semibold text-slate-600">
                         Requested Quantity:
                       </span>
-                      <div className="flex items-center gap-1.5 bg-white p-1 rounded-xl border border-slate-200 shadow-2xs">
+                      <div className="flex items-center gap-1 bg-white p-0.5 rounded-xl border border-slate-200 shadow-2xs">
                         <button
                           onClick={() => handleQuantityChange(item.productId, item.requestedQuantity - 1)}
                           disabled={item.requestedQuantity <= 1}
-                          className="p-1 rounded text-slate-600 hover:bg-slate-100 disabled:opacity-30"
+                          aria-label="Decrease quantity"
+                          className="p-2 min-h-[38px] min-w-[38px] rounded-lg text-slate-600 hover:bg-slate-100 disabled:opacity-30 flex items-center justify-center active:scale-95 transition-all"
                         >
-                          <Minus className="w-3.5 h-3.5" />
+                          <Minus className="w-4 h-4" />
                         </button>
-                        <span className="w-10 text-center font-mono font-bold text-xs text-slate-900">
+                        <span className="w-10 text-center font-mono font-bold text-sm text-slate-900">
                           {item.requestedQuantity}
                         </span>
                         <button
                           onClick={() => handleQuantityChange(item.productId, item.requestedQuantity + 1)}
-                          className="p-1 rounded text-slate-600 hover:bg-slate-100"
+                          aria-label="Increase quantity"
+                          className="p-2 min-h-[38px] min-w-[38px] rounded-lg text-slate-600 hover:bg-slate-100 flex items-center justify-center active:scale-95 transition-all"
                         >
-                          <Plus className="w-3.5 h-3.5" />
+                          <Plus className="w-4 h-4" />
                         </button>
                       </div>
                     </div>
@@ -727,6 +732,61 @@ export default function CheckoutSummary() {
         </div>
       </div>
 
+      {/* Sticky Mobile Action Bar (Mobile Only - positioned above bottom nav) */}
+      <div className="lg:hidden fixed bottom-[calc(3.75rem+env(safe-area-inset-bottom,0px))] left-0 right-0 z-35 bg-slate-900/95 backdrop-blur-md border-t border-slate-800 text-white p-3 shadow-2xl">
+        <div className="max-w-5xl mx-auto flex items-center justify-between gap-3">
+          <div className="min-w-0">
+            <div className="flex items-center gap-1.5">
+              <span className="text-xs font-bold text-white">
+                {totalItems} items
+              </span>
+              <span className="text-slate-400 text-xs">&middot;</span>
+              <span className="text-xs font-mono font-extrabold text-indigo-400">
+                {formatNumber(totalUnits)} units
+              </span>
+            </div>
+            <div className="text-[10px] text-slate-300 truncate">
+              {isVerifiedAndReady ? (
+                <span className="text-emerald-400 font-semibold flex items-center gap-1">
+                  <CheckCircle2 className="w-3 h-3" /> Stock verified ready
+                </span>
+              ) : verificationResult?.hasInsufficientStock ? (
+                <span className="text-rose-400 font-semibold flex items-center gap-1">
+                  <AlertTriangle className="w-3 h-3" /> Stock shortage detected
+                </span>
+              ) : (
+                <span className="text-amber-400 font-semibold">Unverified</span>
+              )}
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 flex-shrink-0">
+            {!isVerifiedAndReady ? (
+              <Button
+                variant="primary"
+                size="sm"
+                className="min-h-[40px] px-3.5 font-bold text-xs"
+                icon={ShieldCheck}
+                onClick={handleVerifyStock}
+                isLoading={isVerifying}
+              >
+                Verify Stock
+              </Button>
+            ) : (
+              <Button
+                variant="primary"
+                size="sm"
+                className="min-h-[40px] px-3.5 font-bold text-xs bg-emerald-600 hover:bg-emerald-700 ring-2 ring-emerald-400/30"
+                icon={FileCheck}
+                onClick={() => setIsConfirmModalOpen(true)}
+              >
+                Confirm Deduct
+              </Button>
+            )}
+          </div>
+        </div>
+      </div>
+
       {/* FINAL CONFIRMATION MODAL */}
       <Modal
         isOpen={isConfirmModalOpen}
@@ -759,8 +819,8 @@ export default function CheckoutSummary() {
             </p>
           </div>
 
-          {/* Breakdown Table */}
-          <div className="overflow-x-auto border border-slate-200 rounded-xl">
+          {/* Breakdown: Desktop Table vs Mobile Cards */}
+          <div className="hidden sm:block overflow-x-auto border border-slate-200 rounded-xl">
             <table className="w-full text-left text-xs">
               <thead className="bg-slate-50 text-[10px] font-bold uppercase text-slate-500 border-b border-slate-200">
                 <tr>
@@ -809,6 +869,27 @@ export default function CheckoutSummary() {
             </table>
           </div>
 
+          {/* Mobile Breakdown Cards */}
+          <div className="sm:hidden space-y-2 max-h-52 overflow-y-auto pr-1">
+            {items.map((item) => {
+              const avail = Number(item.availableQuantity);
+              const req = Number(item.requestedQuantity);
+              const projected = avail - req;
+              return (
+                <div key={item.productId} className="p-2.5 rounded-xl border border-slate-200 bg-slate-50/70 text-xs space-y-1.5">
+                  <div className="flex items-start justify-between gap-2">
+                    <span className="font-bold text-slate-900 leading-tight line-clamp-1">{item.name}</span>
+                    <span className="font-mono text-xs font-bold text-rose-600 flex-shrink-0">-{req} {item.unit}</span>
+                  </div>
+                  <div className="flex items-center justify-between text-[11px] text-slate-500 font-mono">
+                    <span>Avail: {avail}</span>
+                    <span className="text-slate-800 font-semibold">After: {projected} {item.unit}</span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
           <div className="flex items-center justify-between p-3 bg-slate-50 rounded-xl border border-slate-200 text-xs">
             <span className="font-medium text-slate-600">Final Deductions:</span>
             <span className="font-bold text-slate-900">
@@ -823,11 +904,12 @@ export default function CheckoutSummary() {
             </div>
           )}
 
-          <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-100">
+          <div className="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-end gap-2 pt-3 border-t border-slate-100">
             <Button
               variant="ghost"
               onClick={() => setIsConfirmModalOpen(false)}
               disabled={isConfirming}
+              className="w-full sm:w-auto min-h-[44px] justify-center"
             >
               Cancel
             </Button>
@@ -835,7 +917,7 @@ export default function CheckoutSummary() {
               variant="primary"
               onClick={handleExecuteConfirmation}
               isLoading={isConfirming}
-              className="bg-emerald-600 hover:bg-emerald-700"
+              className="w-full sm:w-auto min-h-[44px] justify-center bg-emerald-600 hover:bg-emerald-700"
             >
               Confirm Checkout & Deduct Stock
             </Button>

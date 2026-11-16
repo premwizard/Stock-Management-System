@@ -12,6 +12,7 @@ import { EmptyState } from '../components/common/EmptyState';
 import {
   Boxes,
   Plus,
+  Minus,
   Search,
   ShoppingCart,
   Trash2,
@@ -51,6 +52,7 @@ export default function VehiclePackages() {
 
   // Component Search inside Modal
   const [productSearchInput, setProductSearchInput] = useState('');
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [selectedProductToAdd, setSelectedProductToAdd] = useState(null);
   const [quantityToAdd, setQuantityToAdd] = useState(1);
 
@@ -116,6 +118,7 @@ export default function VehiclePackages() {
     setFormIsActive(true);
     setFormComponents([]);
     setProductSearchInput('');
+    setIsDropdownOpen(false);
     setSelectedProductToAdd(null);
     setQuantityToAdd(1);
     setModalError(null);
@@ -141,6 +144,7 @@ export default function VehiclePackages() {
         }))
       );
       setProductSearchInput('');
+      setIsDropdownOpen(false);
       setSelectedProductToAdd(null);
       setQuantityToAdd(1);
       setModalError(null);
@@ -184,6 +188,7 @@ export default function VehiclePackages() {
 
     setSelectedProductToAdd(null);
     setProductSearchInput('');
+    setIsDropdownOpen(false);
     setQuantityToAdd(1);
     setModalError(null);
   };
@@ -398,20 +403,22 @@ export default function VehiclePackages() {
                       </h3>
                     </div>
 
-                    <div className="flex items-center gap-1">
+                    <div className="flex items-center gap-1.5 flex-shrink-0">
                       <button
                         onClick={() => handleOpenEditModal(pkg)}
-                        className="p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors cursor-pointer"
+                        className="p-2 min-h-[38px] min-w-[38px] flex items-center justify-center text-slate-500 hover:text-indigo-600 bg-slate-50 border border-slate-200 rounded-xl hover:bg-indigo-50 active:scale-95 transition-all cursor-pointer"
                         title="Edit Package"
+                        aria-label="Edit Package"
                       >
-                        <Edit2 className="w-3.5 h-3.5" />
+                        <Edit2 className="w-4 h-4" />
                       </button>
                       <button
                         onClick={() => handleDeletePackage(pkg)}
-                        className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
+                        className="p-2 min-h-[38px] min-w-[38px] flex items-center justify-center text-slate-500 hover:text-rose-600 bg-slate-50 border border-slate-200 rounded-xl hover:bg-rose-50 active:scale-95 transition-all cursor-pointer"
                         title="Delete Package"
+                        aria-label="Delete Package"
                       >
-                        <Trash2 className="w-3.5 h-3.5" />
+                        <Trash2 className="w-4 h-4" />
                       </button>
                     </div>
                   </div>
@@ -471,31 +478,33 @@ export default function VehiclePackages() {
                 {/* Footer Multiplier & Add Action */}
                 <div className="p-4 bg-slate-50/70 border-t border-slate-100 space-y-3">
                   <div className="flex items-center justify-between text-xs">
-                    <span className="font-semibold text-slate-600">Vehicle Multiplier:</span>
+                    <span className="font-bold text-slate-700">Vehicle Multiplier:</span>
                     <div className="flex items-center gap-1.5 bg-white p-1 rounded-xl border border-slate-200 shadow-2xs">
                       <button
                         onClick={() => setMultiplier(pkg.id, mult - 1)}
                         disabled={mult <= 1}
-                        className="p-1 rounded text-slate-600 hover:bg-slate-100 disabled:opacity-30 cursor-pointer"
+                        className="p-2 min-h-[36px] min-w-[36px] flex items-center justify-center rounded-lg text-slate-600 hover:bg-slate-100 active:scale-95 disabled:opacity-30 disabled:pointer-events-none cursor-pointer"
+                        aria-label="Decrease multiplier"
                       >
-                        -
+                        <Minus className="w-3.5 h-3.5" />
                       </button>
-                      <span className="w-10 text-center font-mono font-bold text-xs text-indigo-700">
+                      <span className="w-10 text-center font-mono font-black text-xs text-indigo-700">
                         × {mult}
                       </span>
                       <button
                         onClick={() => setMultiplier(pkg.id, mult + 1)}
-                        className="p-1 rounded text-slate-600 hover:bg-slate-100 cursor-pointer"
+                        className="p-2 min-h-[36px] min-w-[36px] flex items-center justify-center rounded-lg text-slate-600 hover:bg-slate-100 active:scale-95 cursor-pointer"
+                        aria-label="Increase multiplier"
                       >
-                        +
+                        <Plus className="w-3.5 h-3.5" />
                       </button>
                     </div>
                   </div>
 
                   <Button
                     variant="primary"
-                    size="sm"
-                    className="w-full justify-center"
+                    size="md"
+                    className="w-full justify-center min-h-[44px] font-bold"
                     icon={ShoppingCart}
                     disabled={!pkg.is_active}
                     onClick={() => handleAddPackageToCheckout(pkg)}
@@ -585,14 +594,33 @@ export default function VehiclePackages() {
                 <input
                   type="text"
                   value={productSearchInput}
-                  onChange={(e) => setProductSearchInput(e.target.value)}
+                  onChange={(e) => {
+                    setProductSearchInput(e.target.value);
+                    setIsDropdownOpen(true);
+                  }}
+                  onFocus={() => {
+                    if (productSearchInput.trim().length > 1) setIsDropdownOpen(true);
+                  }}
                   placeholder="Search catalogue (e.g. 'Tyre', 'Brake', 'Filter')..."
-                  className="w-full pl-9 pr-3 py-2 rounded-xl border border-slate-200 bg-white text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full pl-9 pr-8 py-2.5 rounded-xl border border-slate-200 bg-white text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 />
+                {productSearchInput && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setProductSearchInput('');
+                      setSelectedProductToAdd(null);
+                      setIsDropdownOpen(false);
+                    }}
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-600 cursor-pointer"
+                  >
+                    ✕
+                  </button>
+                )}
 
                 {/* Dropdown Results */}
-                {productSearchInput.trim().length > 1 && (
-                  <div className="absolute z-30 left-0 right-0 mt-1 max-h-48 overflow-y-auto bg-white rounded-xl border border-slate-200 shadow-lg divide-y divide-slate-100">
+                {isDropdownOpen && productSearchInput.trim().length > 1 && (
+                  <div className="absolute z-30 left-0 right-0 mt-1 max-h-48 overflow-y-auto bg-white rounded-xl border border-slate-200 shadow-xl divide-y divide-slate-100">
                     {isProductSearching ? (
                       <div className="p-3 text-center text-xs text-slate-400">Searching...</div>
                     ) : searchProductResults.length === 0 ? (
@@ -605,8 +633,9 @@ export default function VehiclePackages() {
                           onClick={() => {
                             setSelectedProductToAdd(p);
                             setProductSearchInput(`${p.name} (${p.sku})`);
+                            setIsDropdownOpen(false);
                           }}
-                          className="w-full text-left p-2.5 hover:bg-indigo-50/60 flex items-center justify-between gap-2 cursor-pointer transition-colors"
+                          className="w-full text-left p-3 hover:bg-indigo-50/70 active:bg-indigo-100 flex items-center justify-between gap-2 cursor-pointer transition-colors"
                         >
                           <div className="min-w-0">
                             <span className="text-xs font-bold text-slate-900 block truncate">{p.name}</span>
@@ -629,7 +658,7 @@ export default function VehiclePackages() {
                   min="1"
                   value={quantityToAdd}
                   onChange={(e) => setQuantityToAdd(Math.max(1, parseInt(e.target.value, 10) || 1))}
-                  className="w-full text-center font-mono font-bold text-xs text-slate-900 bg-transparent focus:outline-none"
+                  className="w-full text-center font-mono font-bold text-xs text-slate-900 bg-transparent focus:outline-none py-1.5"
                 />
               </div>
 
@@ -638,7 +667,7 @@ export default function VehiclePackages() {
                   type="button"
                   variant="primary"
                   size="sm"
-                  className="w-full justify-center"
+                  className="w-full justify-center min-h-[40px] font-bold"
                   disabled={!selectedProductToAdd}
                   onClick={handleAddComponentToForm}
                 >
@@ -667,12 +696,12 @@ export default function VehiclePackages() {
                       key={comp.productId}
                       className="flex items-center justify-between p-2.5 rounded-xl bg-white border border-slate-200/80 text-xs"
                     >
-                      <div className="min-w-0">
+                      <div className="min-w-0 pr-2">
                         <span className="font-bold text-slate-900 block truncate">{comp.name}</span>
                         <span className="font-mono text-[10px] text-slate-400 font-semibold">{comp.sku}</span>
                       </div>
 
-                      <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-2 flex-shrink-0">
                         <div className="flex items-center gap-1.5 bg-slate-50 px-2 py-1 rounded-lg border border-slate-200">
                           <span className="text-[10px] text-slate-400 uppercase font-bold">Qty:</span>
                           <input
@@ -697,9 +726,10 @@ export default function VehiclePackages() {
                         <button
                           type="button"
                           onClick={() => handleRemoveComponentFromForm(comp.productId)}
-                          className="p-1 text-slate-400 hover:text-rose-600 rounded transition-colors cursor-pointer"
+                          className="p-2 min-h-[36px] min-w-[36px] flex items-center justify-center text-slate-400 hover:text-rose-600 rounded-lg hover:bg-rose-50 transition-colors cursor-pointer"
+                          aria-label="Remove part"
                         >
-                          <Trash2 className="w-3.5 h-3.5" />
+                          <Trash2 className="w-4 h-4" />
                         </button>
                       </div>
                     </div>
@@ -710,12 +740,13 @@ export default function VehiclePackages() {
           </div>
 
           {/* Modal Actions */}
-          <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
+          <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2 sm:gap-3 pt-4 border-t border-slate-100 sticky bottom-0 bg-white/95 backdrop-blur-xs pb-1">
             <Button
               type="button"
               variant="ghost"
               onClick={() => setIsModalOpen(false)}
               disabled={isSaving}
+              className="w-full sm:w-auto min-h-[44px] justify-center"
             >
               Cancel
             </Button>
@@ -724,6 +755,7 @@ export default function VehiclePackages() {
               variant="primary"
               isLoading={isSaving}
               icon={ArrowRight}
+              className="w-full sm:w-auto min-h-[44px] justify-center font-bold"
             >
               {editingPackage ? 'Update Package' : 'Save Vehicle Package'}
             </Button>
