@@ -4,17 +4,27 @@ import { logger } from '../utils/logger.js';
 
 const { Pool } = pg;
 
-export const pool = new Pool({
-  host: env.DB_HOST,
-  port: env.DB_PORT,
-  user: env.DB_USER,
-  password: env.DB_PASSWORD,
-  database: env.DB_NAME,
-  ssl: env.DB_SSL ? { rejectUnauthorized: false } : false,
-  max: env.DB_MAX_CONNECTIONS,
-  idleTimeoutMillis: env.DB_IDLE_TIMEOUT_MS,
-  connectionTimeoutMillis: env.DB_CONNECTION_TIMEOUT_MS
-});
+const poolConfig = env.DATABASE_URL
+  ? {
+      connectionString: env.DATABASE_URL,
+      ssl: env.DB_SSL ? { rejectUnauthorized: false } : false,
+      max: env.DB_MAX_CONNECTIONS,
+      idleTimeoutMillis: env.DB_IDLE_TIMEOUT_MS,
+      connectionTimeoutMillis: env.DB_CONNECTION_TIMEOUT_MS
+    }
+  : {
+      host: env.DB_HOST,
+      port: env.DB_PORT,
+      user: env.DB_USER,
+      password: env.DB_PASSWORD,
+      database: env.DB_NAME,
+      ssl: env.DB_SSL ? { rejectUnauthorized: false } : false,
+      max: env.DB_MAX_CONNECTIONS,
+      idleTimeoutMillis: env.DB_IDLE_TIMEOUT_MS,
+      connectionTimeoutMillis: env.DB_CONNECTION_TIMEOUT_MS
+    };
+
+export const pool = new Pool(poolConfig);
 
 pool.on('connect', () => {
   logger.debug('New PostgreSQL client connected to pool');
@@ -51,4 +61,3 @@ export const checkDatabaseConnection = async () => {
     latencyMs
   };
 };
-

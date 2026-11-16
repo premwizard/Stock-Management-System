@@ -7,8 +7,13 @@ const envSchema = z.object({
   PORT: z.coerce.number().default(5000),
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
   API_PREFIX: z.string().default('/api/v1'),
+  BACKEND_URL: z.string().default('http://localhost:5000'),
   CLIENT_ORIGIN: z.string().default('http://localhost:5173'),
 
+  // PostgreSQL Connection String (optional, prioritized for production cloud platforms)
+  DATABASE_URL: z.string().optional(),
+
+  // Individual PostgreSQL Credentials
   DB_HOST: z.string().default('localhost'),
   DB_PORT: z.coerce.number().default(5432),
   DB_USER: z.string().default('postgres'),
@@ -33,4 +38,3 @@ if (!parsedEnv.success) {
 }
 
 export const env = parsedEnv.data;
-
