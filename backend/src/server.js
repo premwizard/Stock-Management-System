@@ -1,6 +1,8 @@
 import app from './app.js';
 import { env } from './config/env.js';
 import { pool, checkDatabaseConnection } from './config/database.js';
+import { runMigrations } from './database/migrate.js';
+import { runSeed } from './database/seed.js';
 import { logger } from './utils/logger.js';
 
 let server;
@@ -12,9 +14,24 @@ const startServer = async () => {
     const dbHealth = await checkDatabaseConnection();
     logger.info(`PostgreSQL connected successfully (Latency: ${dbHealth.latencyMs}ms)`);
 
+    // In production or cloud environments, verify and run pending migrations
+    try {
+      logger.info('Checking database schema migrations...');
+      await runMigrations();
+
+      // Auto-seed if database is fresh
+      const catCheck = await pool.query('SELECT COUNT(*)::int AS count FROM categories');
+      if (catCheck.rows[0]?.count === 0) {
+        logger.info('Fresh database detected. Seeding initial automotive catalogue...');
+        await runSeed();
+      }
+    } catch (migErr) {
+      logger.warn({ migErr }, 'Migration runner warning during startup');
+    }
+
     server = app.listen(env.PORT, () => {
-      logger.info(`Server running in [${env.NODE_ENV}] mode on http://localhost:${env.PORT}`);
-      logger.info(`Health check available at http://localhost:${env.PORT}${env.API_PREFIX}/health`);
+      logger.info(`Server running in [${env.NODE_ENV}] mode on port ${env.PORT}`);
+      logger.info(`Health check available at ${env.API_PREFIX}/health`);
     });
   } catch (err) {
     logger.error({ err }, 'Failed to start server due to database or initialization error');
@@ -54,4 +71,3 @@ process.on('uncaughtException', (err) => {
 });
 
 startServer();
-
