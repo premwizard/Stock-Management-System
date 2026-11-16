@@ -10,8 +10,18 @@ const envSchema = z.object({
   BACKEND_URL: z.string().default('http://localhost:5000'),
   CLIENT_ORIGIN: z.string().default('http://localhost:5173'),
 
-  // PostgreSQL Connection String (optional, prioritized for production cloud platforms)
-  DATABASE_URL: z.string().optional(),
+  // PostgreSQL Connection String (supports DATABASE_URL, DATABASE_INTERNAL_URL, POSTGRES_URL)
+  DATABASE_URL: z
+    .string()
+    .optional()
+    .default(
+      () =>
+        process.env.DATABASE_URL ||
+        process.env.DATABASE_INTERNAL_URL ||
+        process.env.POSTGRES_URL ||
+        process.env.POSTGRESQL_URL ||
+        undefined
+    ),
 
   // Individual PostgreSQL Credentials
   DB_HOST: z.string().default('localhost'),

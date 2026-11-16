@@ -6,35 +6,71 @@ import { runSeed } from './database/seed.js';
 import { logger } from './utils/logger.js';
 
 let server;
+let dbInitialized = false;
 
-const startServer = async () => {
+const initializeDatabase = async () => {
   try {
-    // Verify database connectivity
     logger.info('Checking PostgreSQL connection...');
     const dbHealth = await checkDatabaseConnection();
     logger.info(`PostgreSQL connected successfully (Latency: ${dbHealth.latencyMs}ms)`);
 
-    // In production or cloud environments, verify and run pending migrations
-    try {
-      logger.info('Checking database schema migrations...');
-      await runMigrations();
+    logger.info('Executing database schema migrations...');
+    await runMigrations();
 
-      // Auto-seed if database is fresh
-      const catCheck = await pool.query('SELECT COUNT(*)::int AS count FROM categories');
-      if (catCheck.rows[0]?.count === 0) {
-        logger.info('Fresh database detected. Seeding initial automotive catalogue...');
-        await runSeed();
-      }
-    } catch (migErr) {
-      logger.warn({ migErr }, 'Migration runner warning during startup');
+    // Auto-seed if database is fresh (0 categories)
+    const catCheck = await pool.query('SELECT COUNT(*)::int AS count FROM categories');
+    if (catCheck.rows[0]?.count === 0) {
+      logger.info('Fresh database detected. Seeding initial automotive catalogue...');
+      await runSeed();
     }
 
+    dbInitialized = true;
+    logger.info('Database schema and initial data verified successfully.');
+  } catch (err) {
+    logger.error(
+      {
+        message: err.message,
+        code: err.code,
+        host: env.DB_HOST,
+        port: env.DB_PORT,
+        hasDatabaseUrl: Boolean(env.DATABASE_URL)
+      },
+      'PostgreSQL connection could not be established on startup. ' +
+        'If running on Render, make sure to add DATABASE_URL (from your Render PostgreSQL or Supabase/Neon instance) ' +
+        'in the Environment Variables tab of your Render Web Service.'
+    );
+  }
+};
+
+const startServer = async () => {
+  try {
+    // 1. Bind and listen on HTTP PORT immediately so Render health checks succeed
     server = app.listen(env.PORT, () => {
-      logger.info(`Server running in [${env.NODE_ENV}] mode on port ${env.PORT}`);
+      logger.info(`Server listening on port ${env.PORT} in [${env.NODE_ENV}] mode`);
       logger.info(`Health check available at ${env.API_PREFIX}/health`);
     });
+
+    // 2. Initialize database connection and migrations
+    await initializeDatabase();
+
+    // 3. If database failed on initial boot, attempt automatic background reconnect
+    if (!dbInitialized) {
+      const retryInterval = setInterval(async () => {
+        try {
+          const health = await checkDatabaseConnection();
+          if (health.status === 'connected') {
+            logger.info('PostgreSQL connected on retry attempt!');
+            clearInterval(retryInterval);
+            await initializeDatabase();
+          }
+        } catch {
+          // Keep waiting for DB environment to be configured or provisioned
+        }
+      }, 10000);
+      retryInterval.unref();
+    }
   } catch (err) {
-    logger.error({ err }, 'Failed to start server due to database or initialization error');
+    logger.error({ err }, 'Failed to bind HTTP server port');
     process.exit(1);
   }
 };

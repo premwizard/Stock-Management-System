@@ -4,10 +4,17 @@ import { logger } from '../utils/logger.js';
 
 const { Pool } = pg;
 
+// Detect whether SSL is required (cloud databases, production, or explicitly enabled)
+const isLocalhost =
+  (!env.DATABASE_URL && (env.DB_HOST === 'localhost' || env.DB_HOST === '127.0.0.1')) ||
+  (env.DATABASE_URL && (env.DATABASE_URL.includes('localhost') || env.DATABASE_URL.includes('127.0.0.1')));
+
+const useSsl = env.DB_SSL || (!isLocalhost && (env.NODE_ENV === 'production' || Boolean(env.DATABASE_URL)));
+
 const poolConfig = env.DATABASE_URL
   ? {
       connectionString: env.DATABASE_URL,
-      ssl: env.DB_SSL ? { rejectUnauthorized: false } : false,
+      ssl: useSsl ? { rejectUnauthorized: false } : false,
       max: env.DB_MAX_CONNECTIONS,
       idleTimeoutMillis: env.DB_IDLE_TIMEOUT_MS,
       connectionTimeoutMillis: env.DB_CONNECTION_TIMEOUT_MS
@@ -18,7 +25,7 @@ const poolConfig = env.DATABASE_URL
       user: env.DB_USER,
       password: env.DB_PASSWORD,
       database: env.DB_NAME,
-      ssl: env.DB_SSL ? { rejectUnauthorized: false } : false,
+      ssl: useSsl ? { rejectUnauthorized: false } : false,
       max: env.DB_MAX_CONNECTIONS,
       idleTimeoutMillis: env.DB_IDLE_TIMEOUT_MS,
       connectionTimeoutMillis: env.DB_CONNECTION_TIMEOUT_MS
