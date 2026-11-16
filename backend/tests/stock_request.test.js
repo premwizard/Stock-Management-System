@@ -69,6 +69,37 @@ const runStockRequestTests = async () => {
     const p2InitialQty = Number(p2.quantity);
     const p3InitialQty = Number(p3.quantity);
 
+    // 1b. Test Stock Verification API (POST /stock-requests/verify)
+    const verifyValidRes = await request('/stock-requests/verify', {
+      method: 'POST',
+      body: {
+        items: [
+          { productId: p1.id, requestedQuantity: 2 },
+          { productId: p2.id, requestedQuantity: 3 }
+        ]
+      }
+    });
+    assert(verifyValidRes.statusCode === 200, 'POST /stock-requests/verify returns HTTP 200');
+    assert(verifyValidRes.data?.data?.verified === true, 'Verification succeeds when stock is sufficient');
+    assert(verifyValidRes.data?.data?.items?.length === 2, 'Verification returns both items');
+    assert(verifyValidRes.data?.data?.items[0]?.sufficientStock === true, 'Item 1 verified as sufficient');
+
+    // Test verification with excessive quantity
+    const verifyExcessRes = await request('/stock-requests/verify', {
+      method: 'POST',
+      body: {
+        items: [
+          { productId: p1.id, requestedQuantity: 2 },
+          { productId: p3.id, requestedQuantity: p3InitialQty + 500 }
+        ]
+      }
+    });
+    assert(verifyExcessRes.statusCode === 200, 'Verification returns HTTP 200 even when stock insufficient');
+    assert(verifyExcessRes.data?.data?.verified === false, 'Overall verified is false when an item lacks stock');
+    const failedItem = verifyExcessRes.data?.data?.items?.find((i) => i.productId === p3.id);
+    assert(failedItem?.sufficientStock === false, 'Item 3 identified as insufficient stock');
+    assert(failedItem?.deficit === 500, 'Deficit calculated accurately as 500');
+
     // 2. Create DRAFT stock request with valid items
     const createRes = await request('/stock-requests', {
       method: 'POST',

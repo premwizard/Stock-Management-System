@@ -1,12 +1,14 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, Bell, Database, Sparkles, Menu } from 'lucide-react';
+import { Search, Bell, Database, Sparkles, Menu, ShoppingCart } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { dashboardService } from '../../services/dashboard.service';
+import { useCheckoutCart } from '../../context/CheckoutCartContext';
 
 export const Navbar = ({ onOpenMobileMenu }) => {
   const navigate = useNavigate();
   const [quickQuery, setQuickQuery] = useState('');
+  const { totalItems, totalUnits } = useCheckoutCart();
 
   // Fetch summary to show real-time low-stock alert count in bell
   const { data: summaryData } = useQuery({
@@ -77,6 +79,21 @@ export const Navbar = ({ onOpenMobileMenu }) => {
         >
           <Sparkles className="w-3.5 h-3.5 text-indigo-600" />
           <span>Smart Lookup</span>
+        </button>
+
+        {/* Checkout Cart Pill */}
+        <button
+          onClick={() => navigate('/stock-requests/checkout')}
+          className="p-2 text-slate-600 hover:text-indigo-600 rounded-xl hover:bg-indigo-50 relative transition-colors cursor-pointer flex items-center justify-center"
+          title={totalItems > 0 ? `Checkout Cart (${totalItems} products, ${totalUnits} units)` : 'Checkout Cart is empty'}
+          aria-label="View checkout cart"
+        >
+          <ShoppingCart className="w-4 h-4 sm:w-5 sm:h-5" />
+          {totalItems > 0 && (
+            <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 flex items-center justify-center text-[10px] font-extrabold bg-indigo-600 text-white rounded-full leading-none shadow-xs">
+              {totalItems}
+            </span>
+          )}
         </button>
 
         {/* Notifications / Alerts Pill */}

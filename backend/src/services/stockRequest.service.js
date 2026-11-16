@@ -1,9 +1,81 @@
 import { StockRequestRepository } from '../repositories/stockRequest.repository.js';
 import { InventoryRepository } from '../repositories/inventory.repository.js';
 import { ApiError } from '../utils/ApiError.js';
-import { getClient } from '../config/database.js';
+import { getClient, query } from '../config/database.js';
 
 export class StockRequestService {
+  /**
+   * Preview and verify current inventory availability for requested items (non-locking)
+   */
+  static async verifyStock({ items }) {
+    if (!items || items.length === 0) {
+      throw ApiError.badRequest('At least one item is required for stock verification');
+    }
+
+    const productIds = items.map((i) => i.productId);
+    const sql = `
+      SELECT 
+        p.id AS product_id,
+        p.name AS product_name,
+        p.sku,
+        p.brand,
+        p.unit,
+        p.image_url,
+        p.minimum_stock,
+        p.is_active,
+        c.name AS category_name,
+        COALESCE(i.quantity, 0) AS available_quantity
+      FROM products p
+      INNER JOIN categories c ON p.category_id = c.id
+      LEFT JOIN inventory i ON p.id = i.product_id
+      WHERE p.id = ANY($1::uuid[]);
+    `;
+    const res = await query(sql, [productIds]);
+    const productMap = new Map(res.rows.map((r) => [r.product_id, r]));
+
+    const verifiedItems = items.map((item) => {
+      const prod = productMap.get(item.productId);
+      const reqQty = Number(item.requestedQuantity);
+      const availQty = prod ? Number(prod.available_quantity) : 0;
+      const isSufficient = Boolean(prod && prod.is_active && availQty >= reqQty);
+      const deficit = isSufficient ? 0 : Math.max(0, reqQty - availQty);
+
+      let message = 'Stock available';
+      if (!prod) {
+        message = 'Product not found in inventory catalogue';
+      } else if (!prod.is_active) {
+        message = 'Product is marked inactive in catalogue';
+      } else if (availQty < reqQty) {
+        message = `Only ${availQty} ${prod.unit} currently available. Please adjust your requested quantity.`;
+      }
+
+      return {
+        productId: item.productId,
+        name: prod?.product_name || 'Unknown Product',
+        sku: prod?.sku || '',
+        brand: prod?.brand || '',
+        category: prod?.category_name || '',
+        unit: prod?.unit || 'pcs',
+        imageUrl: prod?.image_url || null,
+        requestedQuantity: reqQty,
+        availableQuantity: availQty,
+        sufficientStock: isSufficient,
+        deficit,
+        message
+      };
+    });
+
+    const overallVerified = verifiedItems.every((i) => i.sufficientStock);
+
+    return {
+      verified: overallVerified,
+      totalItems: verifiedItems.length,
+      totalRequestedUnits: verifiedItems.reduce((acc, curr) => acc + curr.requestedQuantity, 0),
+      hasInsufficientStock: !overallVerified,
+      items: verifiedItems
+    };
+  }
+
   /**
    * Create a new draft stock request
    */

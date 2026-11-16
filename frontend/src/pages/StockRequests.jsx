@@ -1,7 +1,10 @@
 import { useState, useEffect } from 'react';
+import { useSearchParams, useNavigate, Link } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { searchService } from '../services/search.service';
 import { stockRequestService } from '../services/stockRequest.service';
+import { useCheckoutCart } from '../context/CheckoutCartContext';
+import { CheckoutSteps } from '../components/checkout/CheckoutSteps';
 import { Card } from '../components/common/Card';
 import { Button } from '../components/common/Button';
 import { Badge } from '../components/common/Badge';
@@ -10,7 +13,6 @@ import { Pagination } from '../components/common/Pagination';
 import { EmptyState } from '../components/common/EmptyState';
 import { getStockStatusConfig } from '../utils/stockStatus';
 import { formatNumber, formatDate } from '../utils/formatters';
-import { Link } from 'react-router-dom';
 import {
   ShoppingCart,
   Search,
@@ -19,8 +21,6 @@ import {
   Plus,
   Minus,
   Trash2,
-  CheckCircle2,
-  AlertTriangle,
   History,
   ArrowRight,
   X,
@@ -38,32 +38,57 @@ const SUGGESTED_QUERIES = [
 ];
 
 export default function StockRequests() {
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const [searchParams, setSearchParams] = useSearchParams();
 
   // Active Tab: 'create' | 'history'
-  const [activeTab, setActiveTab] = useState('create');
+  const initialTab = searchParams.get('tab') === 'history' ? 'history' : 'create';
+  const [activeTab, setActiveTab] = useState(initialTab);
 
   // Search state
-  const [queryInput, setQueryInput] = useState('');
-  const [debouncedQuery, setDebouncedQuery] = useState('');
+  const initialQuery = searchParams.get('q') || '';
+  const [queryInput, setQueryInput] = useState(initialQuery);
+  const [debouncedQuery, setDebouncedQuery] = useState(initialQuery);
   const [searchPage, setSearchPage] = useState(1);
   const searchLimit = 8;
 
-  // Staging / Cart State: Map of productId -> { product, requestedQuantity }
-  const [stagedItems, setStagedItems] = useState({});
-  const [notes, setNotes] = useState('');
-
-  // Modals & Confirmation
-  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [confirmationSuccess, setConfirmationSuccess] = useState(null);
-  const [submitError, setSubmitError] = useState(null);
+  // Checkout Cart Context
+  const {
+    items: cartItems,
+    itemsMap,
+    totalItems,
+    totalUnits,
+    addToCart,
+    updateQuantity,
+    removeFromCart,
+    clearCart
+  } = useCheckoutCart();
 
   // History Tab State
   const [historyPage, setHistoryPage] = useState(1);
   const [historyStatus, setHistoryStatus] = useState('all');
   const [selectedHistoryRequest, setSelectedHistoryRequest] = useState(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+
+  // Sync tab with URL
+  useEffect(() => {
+    const tabInUrl = searchParams.get('tab');
+    if (tabInUrl === 'history' && activeTab !== 'history') {
+      setActiveTab('history');
+    } else if (!tabInUrl && activeTab !== 'create') {
+      setActiveTab('create');
+    }
+  }, [searchParams, activeTab]);
+
+  const handleTabChange = (tab) => {
+    setActiveTab(tab);
+    if (tab === 'history') {
+      setSearchParams({ tab: 'history' });
+    } else {
+      setSearchParams({});
+    }
+  };
 
   // Debounce search input by 250ms
   useEffect(() => {
@@ -109,114 +134,6 @@ export default function StockRequests() {
   const historyRequests = historyResponse?.data || [];
   const historyMeta = historyResponse?.meta || { page: 1, limit: 15, totalPages: 1, totalItems: 0 };
 
-  // Cart Calculations
-  const stagedList = Object.values(stagedItems);
-  const totalDifferentProducts = stagedList.length;
-  const totalRequestedUnits = stagedList.reduce(
-    (acc, item) => acc + Number(item.requestedQuantity),
-    0
-  );
-
-  // Add / Increment Product in Cart
-  const handleAddToCart = (product, qtyToAdd = 1) => {
-    const available = Number(product.quantity) || 0;
-    if (available <= 0) return;
-
-    setStagedItems((prev) => {
-      const existing = prev[product.id];
-      const currentQty = existing ? existing.requestedQuantity : 0;
-      const nextQty = Math.min(available, currentQty + qtyToAdd);
-      return {
-        ...prev,
-        [product.id]: {
-          product,
-          requestedQuantity: Math.max(1, nextQty)
-        }
-      };
-    });
-  };
-
-  // Modify Quantity directly
-  const handleUpdateQuantity = (productId, newQuantity) => {
-    setStagedItems((prev) => {
-      const existing = prev[productId];
-      if (!existing) return prev;
-      const available = Number(existing.product.quantity) || 0;
-      const validQty = Math.min(available, Math.max(1, Number(newQuantity) || 1));
-      return {
-        ...prev,
-        [productId]: {
-          ...existing,
-          requestedQuantity: validQty
-        }
-      };
-    });
-  };
-
-  // Remove Product from Cart
-  const handleRemoveFromCart = (productId) => {
-    setStagedItems((prev) => {
-      const updated = { ...prev };
-      delete updated[productId];
-      return updated;
-    });
-  };
-
-  // Clear entire staging cart
-  const handleClearCart = () => {
-    setStagedItems({});
-    setNotes('');
-    setSubmitError(null);
-  };
-
-  // Execute Confirmation & Inventory Deduction
-  const handleConfirmRequest = async () => {
-    if (stagedList.length === 0) return;
-
-    setIsSubmitting(true);
-    setSubmitError(null);
-
-    try {
-      // 1. Create draft request
-      const payload = {
-        notes: notes.trim() || undefined,
-        items: stagedList.map((item) => ({
-          productId: item.product.id,
-          requestedQuantity: item.requestedQuantity
-        }))
-      };
-
-      const createRes = await stockRequestService.create(payload);
-      const draftId = createRes.data.id;
-
-      // 2. Confirm and deduct stock
-      const confirmRes = await stockRequestService.confirm(draftId);
-      const confirmed = confirmRes.data;
-
-      // 3. Invalidate TanStack Query caches to reflect updated stock across app
-      queryClient.invalidateQueries({ queryKey: ['stock-requests-list'] });
-      queryClient.invalidateQueries({ queryKey: ['stock-request-search'] });
-      queryClient.invalidateQueries({ queryKey: ['products'] });
-      queryClient.invalidateQueries({ queryKey: ['inventory'] });
-      queryClient.invalidateQueries({ queryKey: ['smart-search'] });
-      queryClient.invalidateQueries({ queryKey: ['dashboard-summary'] });
-      queryClient.invalidateQueries({ queryKey: ['dashboard-distribution'] });
-      queryClient.invalidateQueries({ queryKey: ['dashboard-low-stock'] });
-      queryClient.invalidateQueries({ queryKey: ['dashboard-recent-movements'] });
-      queryClient.invalidateQueries({ queryKey: ['stock-movements-history'] });
-
-      // 4. Update UI State
-      setIsConfirmModalOpen(false);
-      setConfirmationSuccess(confirmed);
-      setStagedItems({});
-      setNotes('');
-    } catch (err) {
-      setSubmitError(err);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
   // Confirm an existing DRAFT from history
   const handleConfirmDraftFromHistory = async (draftId) => {
     try {
@@ -260,28 +177,31 @@ export default function StockRequests() {
   };
 
   return (
-    <div className="space-y-6 animate-fadeIn pb-16">
+    <div className="space-y-6 animate-fadeIn pb-24">
+      {/* Checkout Workflow Stepper */}
+      {activeTab === 'create' && <CheckoutSteps currentStep={1} />}
+
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-slate-200">
         <div>
           <div className="flex items-center gap-2 mb-1">
             <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wide bg-indigo-50 text-indigo-700 border border-indigo-100 flex items-center gap-1 shadow-2xs">
               <Zap className="w-3 h-3 text-amber-500 fill-amber-500" />
-              Automated Inventory Deduction
+              E-Commerce Checkout Workflow
             </span>
           </div>
           <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
-            Stock Request & Dispatch
+            Stock Request & Checkout
           </h1>
           <p className="text-xs sm:text-sm text-slate-500 mt-1">
-            Search automotive inventory, select required quantities, review availability, and execute atomic transactional deduction.
+            Search automotive inventory, add items to checkout cart, review summary, verify live stock, and confirm dispatch.
           </p>
         </div>
 
         {/* Tab Switcher */}
         <div className="flex items-center gap-1.5 p-1 bg-slate-100 rounded-xl border border-slate-200/60 shadow-2xs self-start sm:self-auto">
           <button
-            onClick={() => setActiveTab('create')}
+            onClick={() => handleTabChange('create')}
             className={`px-4 py-2 text-xs font-bold rounded-lg flex items-center gap-2 transition-all cursor-pointer ${
               activeTab === 'create'
                 ? 'bg-white text-indigo-700 shadow-xs'
@@ -289,15 +209,15 @@ export default function StockRequests() {
             }`}
           >
             <ShoppingCart className="w-4 h-4" />
-            <span>New Request</span>
-            {totalDifferentProducts > 0 && (
+            <span>Product Selection</span>
+            {totalItems > 0 && (
               <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-indigo-600 text-white font-extrabold">
-                {totalDifferentProducts}
+                {totalItems}
               </span>
             )}
           </button>
           <button
-            onClick={() => setActiveTab('history')}
+            onClick={() => handleTabChange('history')}
             className={`px-4 py-2 text-xs font-bold rounded-lg flex items-center gap-2 transition-all cursor-pointer ${
               activeTab === 'history'
                 ? 'bg-white text-indigo-700 shadow-xs'
@@ -310,47 +230,7 @@ export default function StockRequests() {
         </div>
       </div>
 
-      {/* Confirmation Success Banner */}
-      {confirmationSuccess && (
-        <div className="p-5 rounded-2xl bg-gradient-to-r from-emerald-50 via-white to-emerald-50/50 border border-emerald-200 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4 animate-fadeIn">
-          <div className="flex items-start gap-3.5">
-            <div className="p-2.5 bg-emerald-600 text-white rounded-xl shadow-xs">
-              <CheckCircle2 className="w-5 h-5" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h3 className="font-bold text-sm text-slate-900">
-                  Stock Dispatched Successfully!
-                </h3>
-                <span className="font-mono text-xs font-extrabold bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded border border-emerald-200">
-                  {confirmationSuccess.request_number}
-                </span>
-              </div>
-              <p className="text-xs text-slate-600 mt-1">
-                Deducted {confirmationSuccess.total_quantity} units across {confirmationSuccess.total_items} products. Ground-truth inventory balances and stock movement records have been updated in PostgreSQL.
-              </p>
-            </div>
-          </div>
-          <div className="flex items-center gap-2 self-end sm:self-center">
-            <Link
-              to="/history"
-              className="px-3 py-1.5 rounded-lg text-xs font-bold text-emerald-800 bg-emerald-100 hover:bg-emerald-200 transition-colors flex items-center gap-1.5"
-            >
-              <span>View Movement Ledger</span>
-              <ArrowRight className="w-3.5 h-3.5" />
-            </Link>
-            <button
-              onClick={() => setConfirmationSuccess(null)}
-              className="p-1.5 text-slate-400 hover:text-slate-600 rounded-lg"
-              title="Dismiss"
-            >
-              <X className="w-4 h-4" />
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* TAB 1: NEW STOCK REQUEST */}
+      {/* TAB 1: PRODUCT SEARCH & CART STAGING */}
       {activeTab === 'create' && (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
           {/* Left Column: Search & Product Selection (8 cols) */}
@@ -369,7 +249,7 @@ export default function StockRequests() {
                 {queryInput && (
                   <button
                     onClick={() => setQueryInput('')}
-                    className="absolute right-3.5 p-1 text-slate-400 hover:text-slate-600 rounded-lg"
+                    className="absolute right-3.5 p-1 text-slate-400 hover:text-slate-600 rounded-lg cursor-pointer"
                   >
                     <X className="w-4 h-4" />
                   </button>
@@ -442,15 +322,15 @@ export default function StockRequests() {
                 {searchProducts.map((p) => {
                   const statusConfig = getStockStatusConfig(p.stock_status);
                   const isOutOfStock = Number(p.quantity) <= 0;
-                  const stagedItem = stagedItems[p.id];
-                  const stagedQty = stagedItem ? stagedItem.requestedQuantity : 0;
-                  const remainingAvailable = Number(p.quantity) - stagedQty;
+                  const cartItem = itemsMap[p.id];
+                  const inCartQty = cartItem ? cartItem.requestedQuantity : 0;
+                  const remainingAvailable = Number(p.quantity) - inCartQty;
 
                   return (
                     <Card
                       key={p.id}
                       className={`overflow-hidden flex flex-col justify-between border transition-all duration-200 ${
-                        stagedItem
+                        cartItem
                           ? 'border-indigo-400 ring-2 ring-indigo-100 bg-white shadow-xs'
                           : 'border-slate-200/80 bg-white hover:border-slate-300 hover:shadow-2xs'
                       }`}
@@ -513,7 +393,7 @@ export default function StockRequests() {
                         </div>
                       </div>
 
-                      {/* Card Footer: Stock Level & Quantity Selector */}
+                      {/* Card Footer: Stock Level & Add to Checkout Controls */}
                       <div className="p-3.5 pt-2.5 border-t border-slate-100 bg-slate-50/50 flex items-center justify-between gap-2">
                         <div>
                           <span className="text-[9px] uppercase font-bold text-slate-400 block tracking-wider">
@@ -529,28 +409,28 @@ export default function StockRequests() {
                           <span className="text-[11px] font-bold text-rose-600 bg-rose-50 px-2.5 py-1.5 rounded-lg border border-rose-200">
                             Out of Stock
                           </span>
-                        ) : stagedItem ? (
+                        ) : cartItem ? (
                           <div className="flex items-center gap-1.5 bg-white p-1 rounded-xl border border-indigo-200 shadow-2xs">
                             <button
                               onClick={() => {
-                                if (stagedQty <= 1) {
-                                  handleRemoveFromCart(p.id);
+                                if (inCartQty <= 1) {
+                                  removeFromCart(p.id);
                                 } else {
-                                  handleUpdateQuantity(p.id, stagedQty - 1);
+                                  updateQuantity(p.id, inCartQty - 1);
                                 }
                               }}
-                              className="p-1 rounded-lg text-slate-600 hover:bg-slate-100 transition-colors"
+                              className="p-1 rounded-lg text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer"
                               title="Decrease"
                             >
                               <Minus className="w-3.5 h-3.5" />
                             </button>
                             <span className="px-2 font-mono font-black text-xs text-indigo-700 min-w-[24px] text-center">
-                              {stagedQty}
+                              {inCartQty}
                             </span>
                             <button
-                              onClick={() => handleUpdateQuantity(p.id, stagedQty + 1)}
+                              onClick={() => updateQuantity(p.id, inCartQty + 1)}
                               disabled={remainingAvailable <= 0}
-                              className="p-1 rounded-lg text-slate-600 hover:bg-slate-100 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                              className="p-1 rounded-lg text-slate-600 hover:bg-slate-100 disabled:opacity-30 disabled:cursor-not-allowed transition-colors cursor-pointer"
                               title="Increase"
                             >
                               <Plus className="w-3.5 h-3.5" />
@@ -561,9 +441,9 @@ export default function StockRequests() {
                             variant="primary"
                             size="sm"
                             icon={Plus}
-                            onClick={() => handleAddToCart(p, 1)}
+                            onClick={() => addToCart(p, 1)}
                           >
-                            Add to Request
+                            Add to Checkout
                           </Button>
                         )}
                       </div>
@@ -585,7 +465,7 @@ export default function StockRequests() {
             )}
           </div>
 
-          {/* Right Column: Selected Products Staging Drawer (4-5 cols) */}
+          {/* Right Column: Checkout Cart Preview (4-5 cols) */}
           <div className="lg:col-span-5 xl:col-span-4 sticky top-6 space-y-4">
             <Card className="p-5 border border-slate-200/80 bg-white shadow-xs space-y-4">
               <div className="flex items-center justify-between pb-3 border-b border-slate-100">
@@ -595,18 +475,18 @@ export default function StockRequests() {
                   </div>
                   <div>
                     <h2 className="font-bold text-sm text-slate-900 tracking-tight">
-                      Selected Products
+                      Checkout Cart
                     </h2>
                     <span className="text-[11px] text-slate-500">
-                      {totalDifferentProducts} items staged for dispatch
+                      {totalItems} items staged
                     </span>
                   </div>
                 </div>
 
-                {totalDifferentProducts > 0 && (
+                {totalItems > 0 && (
                   <button
-                    onClick={handleClearCart}
-                    className="text-[11px] font-bold text-slate-400 hover:text-rose-600 transition-colors"
+                    onClick={clearCart}
+                    className="text-[11px] font-bold text-slate-400 hover:text-rose-600 transition-colors cursor-pointer"
                   >
                     Clear All
                   </button>
@@ -614,138 +494,138 @@ export default function StockRequests() {
               </div>
 
               {/* Items List */}
-              {stagedList.length === 0 ? (
+              {cartItems.length === 0 ? (
                 <div className="py-10 text-center space-y-2">
                   <div className="w-12 h-12 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-center mx-auto text-slate-300">
                     <ShoppingCart className="w-6 h-6" />
                   </div>
-                  <h4 className="font-bold text-xs text-slate-700">No Products Selected</h4>
+                  <h4 className="font-bold text-xs text-slate-700">Checkout Cart is Empty</h4>
                   <p className="text-[11px] text-slate-400 max-w-[200px] mx-auto">
-                    Search from catalogue on the left and select quantities to build your stock request.
+                    Search from the catalogue on the left and click &ldquo;Add to Checkout&rdquo; to build your dispatch.
                   </p>
                 </div>
               ) : (
                 <div className="space-y-3 max-h-[360px] overflow-y-auto pr-1">
-                  {stagedList.map(({ product, requestedQuantity }) => {
-                    const available = Number(product.quantity) || 0;
-                    return (
-                      <div
-                        key={product.id}
-                        className="p-3 rounded-xl border border-slate-200 bg-slate-50/60 space-y-2.5"
-                      >
-                        <div className="flex items-start justify-between gap-2">
-                          <div className="flex items-center gap-2.5 min-w-0">
-                            {product.image_url ? (
-                              <img
-                                src={product.image_url}
-                                alt={product.name}
-                                className="w-9 h-9 rounded-lg object-cover bg-white border border-slate-200 flex-shrink-0"
-                              />
-                            ) : (
-                              <div className="w-9 h-9 rounded-lg bg-white border border-slate-200 flex items-center justify-center text-slate-300 flex-shrink-0">
-                                <Package className="w-4 h-4" />
-                              </div>
-                            )}
-                            <div className="min-w-0">
-                              <h4 className="font-bold text-xs text-slate-900 truncate" title={product.name}>
-                                {product.name}
-                              </h4>
-                              <span className="font-mono text-[10px] text-slate-500 font-semibold">
-                                {product.sku} &middot; {product.category || product.category_name}
-                              </span>
+                  {cartItems.map((item) => (
+                    <div
+                      key={item.productId}
+                      className="p-3 rounded-xl border border-slate-200 bg-slate-50/60 space-y-2.5"
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          {item.imageUrl ? (
+                            <img
+                              src={item.imageUrl}
+                              alt={item.name}
+                              className="w-9 h-9 rounded-lg object-cover bg-white border border-slate-200 flex-shrink-0"
+                            />
+                          ) : (
+                            <div className="w-9 h-9 rounded-lg bg-white border border-slate-200 flex items-center justify-center text-slate-300 flex-shrink-0">
+                              <Package className="w-4 h-4" />
                             </div>
+                          )}
+                          <div className="min-w-0">
+                            <h4 className="font-bold text-xs text-slate-900 truncate" title={item.name}>
+                              {item.name}
+                            </h4>
+                            <span className="font-mono text-[10px] text-slate-500 font-semibold">
+                              {item.sku} &middot; {item.category}
+                            </span>
                           </div>
+                        </div>
 
+                        <button
+                          onClick={() => removeFromCart(item.productId)}
+                          className="p-1 text-slate-400 hover:text-rose-600 rounded-lg transition-colors flex-shrink-0 cursor-pointer"
+                          title="Remove item"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+
+                      {/* Stepper + Available Indicator */}
+                      <div className="flex items-center justify-between pt-1 border-t border-slate-200/50 text-xs">
+                        <span className="text-[10px] text-slate-500 font-medium">
+                          Avail: <strong className="text-slate-900">{item.availableQuantity}</strong> {item.unit}
+                        </span>
+
+                        <div className="flex items-center gap-1.5 bg-white px-2 py-1 rounded-lg border border-slate-200 shadow-2xs">
                           <button
-                            onClick={() => handleRemoveFromCart(product.id)}
-                            className="p-1 text-slate-400 hover:text-rose-600 rounded-lg transition-colors flex-shrink-0"
-                            title="Remove item"
+                            onClick={() => updateQuantity(item.productId, item.requestedQuantity - 1)}
+                            disabled={item.requestedQuantity <= 1}
+                            className="p-0.5 rounded text-slate-600 hover:bg-slate-100 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
                           >
-                            <Trash2 className="w-3.5 h-3.5" />
+                            <Minus className="w-3 h-3" />
+                          </button>
+                          <span className="w-8 text-center font-mono font-bold text-xs text-slate-900">
+                            {item.requestedQuantity}
+                          </span>
+                          <button
+                            onClick={() => updateQuantity(item.productId, item.requestedQuantity + 1)}
+                            className="p-0.5 rounded text-slate-600 hover:bg-slate-100 cursor-pointer"
+                          >
+                            <Plus className="w-3 h-3" />
                           </button>
                         </div>
-
-                        {/* Stepper + Available Indicator */}
-                        <div className="flex items-center justify-between pt-1 border-t border-slate-200/50 text-xs">
-                          <span className="text-[10px] text-slate-500 font-medium">
-                            Avail: <strong className="text-slate-900">{available}</strong> {product.unit}
-                          </span>
-
-                          <div className="flex items-center gap-1.5 bg-white px-2 py-1 rounded-lg border border-slate-200 shadow-2xs">
-                            <button
-                              onClick={() => handleUpdateQuantity(product.id, requestedQuantity - 1)}
-                              disabled={requestedQuantity <= 1}
-                              className="p-0.5 rounded text-slate-600 hover:bg-slate-100 disabled:opacity-30 disabled:cursor-not-allowed"
-                            >
-                              <Minus className="w-3 h-3" />
-                            </button>
-                            <input
-                              type="number"
-                              min="1"
-                              max={available}
-                              value={requestedQuantity}
-                              onChange={(e) => handleUpdateQuantity(product.id, e.target.value)}
-                              className="w-12 text-center font-mono font-bold text-xs text-slate-900 focus:outline-none"
-                            />
-                            <button
-                              onClick={() => handleUpdateQuantity(product.id, requestedQuantity + 1)}
-                              disabled={requestedQuantity >= available}
-                              className="p-0.5 rounded text-slate-600 hover:bg-slate-100 disabled:opacity-30 disabled:cursor-not-allowed"
-                            >
-                              <Plus className="w-3 h-3" />
-                            </button>
-                          </div>
-                        </div>
                       </div>
-                    );
-                  })}
+                    </div>
+                  ))}
                 </div>
               )}
-
-              {/* Operational Dispatch Notes */}
-              <div className="space-y-1.5 pt-2 border-t border-slate-100">
-                <label className="block text-[11px] font-bold text-slate-600 uppercase tracking-wider">
-                  Dispatch Notes (Optional)
-                </label>
-                <textarea
-                  rows="2"
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
-                  placeholder="e.g. Workshop Service Bay #3, Work Order #8402..."
-                  className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-900 placeholder-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                />
-              </div>
 
               {/* Staging Summary */}
               <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200/80 space-y-2 text-xs">
                 <div className="flex justify-between text-slate-600">
-                  <span>Distinct Product Lines:</span>
-                  <span className="font-bold text-slate-900">{totalDifferentProducts}</span>
+                  <span>Different Products:</span>
+                  <span className="font-bold text-slate-900">{totalItems}</span>
                 </div>
                 <div className="flex justify-between text-slate-600">
-                  <span>Total Units to Deduct:</span>
+                  <span>Total Units Staged:</span>
                   <span className="font-mono font-black text-slate-900 text-sm">
-                    {formatNumber(totalRequestedUnits)}
+                    {formatNumber(totalUnits)}
                   </span>
                 </div>
               </div>
 
-              {/* Confirmation CTA */}
+              {/* Proceed to Checkout Action */}
               <Button
                 variant="primary"
                 size="md"
                 className="w-full justify-center"
-                disabled={totalDifferentProducts === 0}
-                onClick={() => setIsConfirmModalOpen(true)}
+                disabled={totalItems === 0}
+                icon={ArrowRight}
+                onClick={() => navigate('/stock-requests/checkout')}
               >
-                Review & Confirm Request
+                Proceed to Checkout ({totalItems})
               </Button>
             </Card>
           </div>
         </div>
       )}
 
-      {/* TAB 2: REQUEST HISTORY */}
+      {/* Floating Bottom Drawer on Mobile when items in cart */}
+      {activeTab === 'create' && totalItems > 0 && (
+        <div className="lg:hidden fixed bottom-16 left-0 right-0 p-3 bg-white/95 backdrop-blur-md border-t border-slate-200 shadow-xl z-20 flex items-center justify-between gap-3 animate-slideUp">
+          <div>
+            <span className="text-xs font-bold text-slate-900 block">
+              {totalItems} products selected
+            </span>
+            <span className="text-[10px] text-indigo-700 font-extrabold">
+              {formatNumber(totalUnits)} units staged
+            </span>
+          </div>
+          <Button
+            variant="primary"
+            size="sm"
+            icon={ArrowRight}
+            onClick={() => navigate('/stock-requests/checkout')}
+          >
+            Checkout
+          </Button>
+        </div>
+      )}
+
+      {/* TAB 2: REQUEST LEDGER HISTORY */}
       {activeTab === 'history' && (
         <div className="space-y-5">
           {/* Status Filter Tabs */}
@@ -778,9 +658,9 @@ export default function StockRequests() {
               variant="outline"
               size="sm"
               icon={ShoppingCart}
-              onClick={() => setActiveTab('create')}
+              onClick={() => handleTabChange('create')}
             >
-              New Stock Request
+              Select Products
             </Button>
           </div>
 
@@ -796,7 +676,7 @@ export default function StockRequests() {
                 title="No Stock Requests Found"
                 description="No stock requests have been created matching your selected filter."
                 actionLabel="Create Stock Request"
-                onAction={() => setActiveTab('create')}
+                onAction={() => handleTabChange('create')}
               />
             ) : (
               <>
@@ -968,110 +848,6 @@ export default function StockRequests() {
           </Card>
         </div>
       )}
-
-      {/* REVIEW & CONFIRMATION MODAL */}
-      <Modal
-        isOpen={isConfirmModalOpen}
-        onClose={() => !isSubmitting && setIsConfirmModalOpen(false)}
-        title="Confirm Stock Request & Deduct Inventory"
-        subtitle="Review the items below before executing transactional stock reduction."
-        maxWidth="max-w-2xl"
-      >
-        <div className="space-y-4">
-          {submitError && (
-            <div className="p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs font-semibold space-y-1">
-              <div className="flex items-center gap-2">
-                <AlertTriangle className="w-4 h-4 text-rose-600 flex-shrink-0" />
-                <span>{submitError.message}</span>
-              </div>
-              {submitError.errors && submitError.errors.length > 0 && (
-                <ul className="list-disc pl-5 text-[11px] space-y-0.5 pt-1 text-rose-700 font-normal">
-                  {submitError.errors.map((e, idx) => (
-                    <li key={idx}>{e.reason || e.message}</li>
-                  ))}
-                </ul>
-              )}
-            </div>
-          )}
-
-          <div className="p-3 bg-amber-50 rounded-xl border border-amber-200 text-amber-900 text-xs flex items-start gap-2.5">
-            <AlertTriangle className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
-            <p className="leading-relaxed">
-              <strong>Ground-truth stock deduction:</strong> Confirming this request will immediately deduct the requested units from the warehouse database using row-level transaction locks.
-            </p>
-          </div>
-
-          {/* Breakdown Table */}
-          <div className="overflow-x-auto border border-slate-200 rounded-xl">
-            <table className="w-full text-left text-xs">
-              <thead className="bg-slate-50 text-[10px] font-bold uppercase text-slate-500 border-b border-slate-200">
-                <tr>
-                  <th className="py-2.5 px-3">Product Name & SKU</th>
-                  <th className="py-2.5 px-3 text-right">Available</th>
-                  <th className="py-2.5 px-3 text-right">Requested</th>
-                  <th className="py-2.5 px-3 text-right">Projected Balance</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {stagedList.map(({ product, requestedQuantity }) => {
-                  const avail = Number(product.quantity);
-                  const projected = avail - requestedQuantity;
-                  return (
-                    <tr key={product.id}>
-                      <td className="py-2.5 px-3">
-                        <span className="font-bold text-slate-900 block truncate max-w-xs">
-                          {product.name}
-                        </span>
-                        <span className="font-mono text-[10px] text-slate-500">{product.sku}</span>
-                      </td>
-                      <td className="py-2.5 px-3 text-right font-mono text-slate-600">
-                        {avail} {product.unit}
-                      </td>
-                      <td className="py-2.5 px-3 text-right font-mono font-bold text-rose-600">
-                        -{requestedQuantity}
-                      </td>
-                      <td className="py-2.5 px-3 text-right font-mono font-extrabold text-slate-900">
-                        {projected} {product.unit}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-
-          <div className="flex items-center justify-between p-3 bg-slate-50 rounded-xl border border-slate-200 text-xs">
-            <span className="font-medium text-slate-600">Summary:</span>
-            <span className="font-bold text-slate-900">
-              {totalDifferentProducts} Products &middot; {formatNumber(totalRequestedUnits)} Units Total
-            </span>
-          </div>
-
-          {notes && (
-            <div className="text-xs text-slate-600 bg-slate-50 p-3 rounded-xl border border-slate-200">
-              <span className="font-bold text-slate-500 block mb-1">Dispatch Notes:</span>
-              <p className="italic">{notes}</p>
-            </div>
-          )}
-
-          <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-100">
-            <Button
-              variant="ghost"
-              onClick={() => setIsConfirmModalOpen(false)}
-              disabled={isSubmitting}
-            >
-              Cancel
-            </Button>
-            <Button
-              variant="primary"
-              onClick={handleConfirmRequest}
-              isLoading={isSubmitting}
-            >
-              Confirm & Deduct Stock
-            </Button>
-          </div>
-        </div>
-      </Modal>
 
       {/* DETAIL MODAL FOR HISTORY */}
       <Modal

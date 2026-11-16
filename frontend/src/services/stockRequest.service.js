@@ -2,6 +2,14 @@ import { apiClient } from './api';
 
 export const stockRequestService = {
   /**
+   * Preview and verify current inventory availability for requested items (non-locking)
+   * @param {{ items: Array<{ productId: string, requestedQuantity: number }> }} data
+   */
+  verifyStock: async (data) => {
+    return apiClient.post('/stock-requests/verify', data);
+  },
+
+  /**
    * Create a new draft stock request
    * @param {{ items: Array<{ productId: string, requestedQuantity: number }>, notes?: string }} data
    */

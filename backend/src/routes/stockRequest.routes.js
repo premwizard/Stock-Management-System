@@ -3,12 +3,20 @@ import { StockRequestController } from '../controllers/stockRequest.controller.j
 import { validate } from '../middleware/validate.middleware.js';
 import {
   createStockRequestSchema,
+  verifyStockRequestSchema,
   updateStockRequestSchema,
   listStockRequestsQuerySchema,
   stockRequestIdParamSchema
 } from '../validators/stockRequest.validator.js';
 
 const router = Router();
+
+// Preview & verify stock availability before confirmation (read-only, non-locking)
+router.post(
+  '/verify',
+  validate(verifyStockRequestSchema, 'body'),
+  StockRequestController.verify
+);
 
 // Create new draft stock request
 router.post(

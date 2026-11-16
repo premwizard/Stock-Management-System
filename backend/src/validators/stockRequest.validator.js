@@ -30,6 +30,19 @@ export const createStockRequestSchema = z.object({
     )
 });
 
+export const verifyStockRequestSchema = z.object({
+  items: z
+    .array(stockRequestItemSchema, { required_error: 'Items array is required' })
+    .min(1, 'At least one item is required for stock verification')
+    .refine(
+      (items) => {
+        const productIds = items.map((i) => i.productId);
+        return new Set(productIds).size === productIds.length;
+      },
+      { message: 'Duplicate product entries are not allowed' }
+    )
+});
+
 export const updateStockRequestSchema = z.object({
   notes: z
     .string()

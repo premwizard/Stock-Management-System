@@ -4,6 +4,17 @@ import { asyncHandler } from '../utils/asyncHandler.js';
 
 export class StockRequestController {
   /**
+   * Preview and verify current inventory availability for requested items (read-only)
+   */
+  static verify = asyncHandler(async (req, res) => {
+    const result = await StockRequestService.verifyStock(req.body);
+    const message = result.verified
+      ? 'All requested product quantities are available in warehouse inventory'
+      : 'One or more items have insufficient stock or are unavailable';
+    return ApiResponse.ok(res, result, message);
+  });
+
+  /**
    * Create draft stock request
    */
   static create = asyncHandler(async (req, res) => {
